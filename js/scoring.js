@@ -2,8 +2,8 @@
   'use strict';
   const D=typeof module!=='undefined'&&module.exports?require('./data.js'):root.DateData;
   function questions(a){
-    const list=[...D.scheduleQuestions,{id:'main',eyebrow:'まずは、今の気分から',title:'一番楽しみたいのは？',hint:'いちばん近い気分をひとつ選んでね。',options:D.interests}];
-    if(D.refinements[a.main]) list.push({id:'detail',eyebrow:'もう少しだけ、聞かせて',hint:'気になるものがなければ、こだわらなくても大丈夫。',...D.refinements[a.main]});
+    const list=[...D.scheduleQuestions,{id:'main',eyebrow:'今の気分を教えて',title:'一番楽しみたいのは？',hint:'いちばん近い気分をひとつ選んでね。',options:D.interests}];
+    if(D.refinements[a.main]) list.push({id:'detail',eyebrow:'もう少しだけ、聞かせて',hint:'決まっていなくても大丈夫。近いものを選んでね。',...D.refinements[a.main]});
     return list.concat(D.commonQuestions.filter(q=>['travel','extras'].includes(q.id)||(a.extras==='yes'&&(q.id!=='companion'||a.duration!=='meal'))));
   }
   function answer(a,id,value){
