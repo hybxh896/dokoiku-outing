@@ -40,6 +40,7 @@
     shiga:{name:'滋賀',theme:'湖と山の景色、ごほうびのごはん。',icon:'△',scene:'lake',color:'mint',image:null,tags:['湖・山','近江牛'],spots:[['びわ湖テラス','湖と山の広がりを眺める展望スポット。天候・営業状況を確認して。'],['メタセコイア並木','季節ごとに表情が変わる並木道。ほかの候補とは距離があります。'],['比叡山のお参り','山のお寺へ。参拝する区域はこれから選びます。'],['夢見が丘の夜景','比叡山の夜景の暫定候補。夜まで過ごせる日に。','暫定候補'],['農家レストランだいきち 大津堅田店','近江牛を楽しむ食事の候補。景色スポットとの移動は確認中。']]},
     kyoto:{name:'天橋立',theme:'海を見晴らして、松並木を歩く。',icon:'≈',scene:'sea',color:'blue',image:null,tags:['海の展望','散策'],spots:[['天橋立ビューランド','高いところから、海と松並木の景色を眺めよう。'],['天橋立の松並木','景色を見ながら散策。全部を渡らず、短く歩く楽しみ方も。'],['海鮮グルメ','海鮮のお店も候補に。具体的なお店はこれから。','店舗未定']]}
   };
+  destinations.byakuan={name:'神崎川・白庵',theme:'白庵でうどん、気が向いたらケーキ',textOnly:true,planNote:'好きなうどんを食べることがメインの、車で出かける短めのプラン。',duration:'食事とお茶で2〜3時間程度が目安。移動・待ち時間は別です。',tags:['うどん','短め','ケーキは任意'],spots:[['神崎川の白庵でうどん','食事だけで解散しても予定どおり。好きなうどんを楽しもう。'],['余裕があれば、ケーキやスイーツ','お店は事前に決め込まず、当日の気分と元気に合わせて。','任意の寄り道'],['近めに寄るなら：豊中・少路〜緑丘','ケーキやスイーツのお店を当日の気分で選ぶ候補エリア。','店舗未定'],['ドライブも楽しむなら：箕面・牧落〜桜井、小野原方面','車での寄り道も楽しみたい日に。具体的なお店と移動時間はこれから。','店舗未定'],['お茶を楽しんだら解散','カフェを入れても、食事とお茶で全体2〜3時間程度。移動・待ち時間は別に考えよう。']]};
   const p=(id,area,name,main,detail,environment,walkingNote,companions={})=>({id,area,name,main,detail,environment,walkingNote,companions});
   const profiles=[
     p('outlet','sanda','アウトレットで買い物',{shopping:12},{},'mixed','お店を巡るため歩きます。見るお店を絞ると過ごしやすそう。'),
@@ -66,7 +67,8 @@
     p('okage-cafe','mie','おかげ横丁と五十鈴川カフェ',{cafe:12,walk:12,nature:6},{view:4,sweets:4,town:4},'mixed','街並みを歩き、川沿いのカフェでひと休みする候補です。'),
     p('city-cruise','tokushima','ひょうたん島クルーズで街の水辺へ',{boat:12,nature:6},{city:4},null,'乗り場は徳島市中心部。鳴門の観潮船とは別の場所です。乗降の動線は確認中。')
   );
-  const profileTags={outlet:['買い物','お店巡り'],garden:['植物','温室'],pancake:['スイーツ'],udon:['うどん'],museum:['アート','屋内'],boat:['観潮船'],okage:['食べ歩き','街並み'],terrace:['湖の展望'],trees:['並木','緑'],temple:['参拝'],night:['夜景'],beef:['近江牛'],bridge:['海の展望','松並木']};
+  profiles.push(p('byakuan','byakuan','白庵でうどん、気が向いたらケーキ',{food:12},{noodles:4},'indoor','食事が主役。待ち時間や駐車場からの移動は当日確認して。'));
+  const profileTags={byakuan:['うどん','短め','ケーキは任意'],outlet:['買い物','お店巡り'],garden:['植物','温室'],pancake:['スイーツ'],udon:['うどん'],museum:['アート','屋内'],boat:['観潮船'],okage:['食べ歩き','街並み'],terrace:['湖の展望'],trees:['並木','緑'],temple:['参拝'],night:['夜景'],beef:['近江牛'],bridge:['海の展望','松並木']};
   profiles.forEach(p=>{p.tags=profileTags[p.id]||[];});
   profiles.find(p=>p.id==='okage-seafood').tags=['海鮮','横丁散策'];
   profiles.find(p=>p.id==='okage-udon').tags=['伊勢うどん','横丁散策'];
@@ -91,12 +93,13 @@
   // Avoid attaching a ramen image to an udon dish: use a general food visual.
 
   spotImages.mie.push(['seafood'],['ise-udon'],['coffee']);
+  galleries.byakuan=[];spotImages.byakuan=destinations.byakuan.spots.map(()=>[]);
   Object.keys(destinations).forEach(id=>{destinations[id].gallery=galleries[id];destinations[id].spotImages=spotImages[id];});
   const scoring={direct:12,partial:6,detailDirect:4,detailPartial:2,companionMax:4,environment:{indoor:{indoor:0,mixed:-2,outdoor:-4},outdoor:{indoor:-4,mixed:-1,outdoor:0}},areaOrder:Object.keys(destinations)};
   // Editorial relative burden, not measured journey times or live routing.
   const travel={origin:'大阪駅周辺',note:'高速道路利用を想定した暫定の区分です。渋滞・休憩・現地での移動は含みません。',labels:{near:'比較的短め',middle:'中くらい',far:'長め'},penalties:{short:{near:0,middle:-3,far:-6},middle:{near:0,middle:0,far:-2},long:{near:0,middle:0,far:0}}};
   travel.timePenalties={early:{near:0,middle:-2,far:-6}};
-  const travelBands={outlet:'near',garden:'middle',pancake:'middle',udon:'middle',museum:'far',boat:'far',okage:'far',terrace:'middle',trees:'far',temple:'middle',night:'middle',beef:'middle',bridge:'far','okage-seafood':'far','okage-udon':'far','okage-cafe':'far','city-cruise':'far'};
+  const travelBands={byakuan:'near',outlet:'near',garden:'middle',pancake:'middle',udon:'middle',museum:'far',boat:'far',okage:'far',terrace:'middle',trees:'far',temple:'middle',night:'middle',beef:'middle',bridge:'far','okage-seafood':'far','okage-udon':'far','okage-cafe':'far','city-cruise':'far'};
   profiles.forEach(p=>{p.travelBand=travelBands[p.id];});
   const data={interests,refinements,commonQuestions,destinations,profiles,scoring,referenceImages,travel,imageAssets};
   root.DateData=data;

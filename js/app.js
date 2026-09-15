@@ -13,6 +13,7 @@
   };
   const art=(area,extra='',imageKey=null)=>{
     const d=D.destinations[area];
+    if(d.textOnly)return '<div class="plan-banner"><span>近場で、短めのおでかけ</span><p>うどんを食べて、<br>あとはその日の気分で。</p><small>ケーキは、余裕があれば。</small></div>';
     if(d.gallery&&!d.image)return `<figure class="photo-gallery ${d.color} ${extra}"><div class="gallery-main">${picture(imageKey||d.gallery[0])}</div><div class="gallery-thumbs">${d.gallery.slice(1).map(picture).join('')}</div><figcaption>${d.name}のおでかけをイメージ · AI参考画像</figcaption></figure>`;
     return `<div class="art ${d.scene} ${extra}" aria-hidden="true"><span class="sun"></span><span class="cloud"></span><span class="water"></span><span class="art-label">A LITTLE DAY OUT</span>${d.image?`<img src="${esc(d.image)}" alt="">`:''}${extra==='hero-art'?'<span class="hero-sticker">気になる場所、<br>見つけよう。</span>':''}</div>`;
   };
@@ -46,6 +47,7 @@
   }
   function card(p,index){
     const d=D.destinations[p.area],rs=reasons(p).slice(0,2),notes=[];
+    if(d.duration)notes.push(d.duration);
     const hasEnv=['indoor','outdoor'].includes(answers.environment);
     if(hasEnv&&p.environment&&D.scoring.environment[answers.environment]?.[p.environment]<0)notes.push('屋内・屋外の希望とは少し異なる候補です。');
     if(hasEnv&&!p.environment)notes.push('屋内・屋外の利用条件は確認中です。');
@@ -65,18 +67,18 @@
     const ranked=L.rank(answers),matched=ranked.filter(p=>p.matched);
     let content='';
     if(!matched.length){
-      const message=answers.detail==='night'&&answers.time==='early'?'夜景を楽しむには、夜まで過ごせる日がよさそう。時間を見直すか、昼の景色から探してみよう。':answers.detail==='seafood'?'海鮮のお店は、まだ候補を整理中です。好みに合わないのではなく、この試作版では十分に比較できません。':answers.detail==='city'?'街のクルーズは運航情報を確認中です。候補一覧には残しています。':answers.detail==='view'?'景色を楽しめるカフェの席・施設は確認中です。まずはエリアの候補を見てみよう。':'まだ目的が決まっていなくても大丈夫。6つのエリアを見ながら、気になるところを探してみよう。';
+      const message=answers.detail==='night'&&answers.time==='early'?'夜景を楽しむには、夜まで過ごせる日がよさそう。時間を見直すか、昼の景色から探してみよう。':answers.detail==='seafood'?'海鮮のお店は、まだ候補を整理中です。好みに合わないのではなく、この試作版では十分に比較できません。':answers.detail==='city'?'街のクルーズは運航情報を確認中です。候補一覧には残しています。':answers.detail==='view'?'景色を楽しめるカフェの席・施設は確認中です。まずはエリアの候補を見てみよう。':'まだ目的が決まっていなくても大丈夫。候補一覧を見ながら、気になるところを探してみよう。';
       content=`<div class="empty"><h2>候補を見ながら、考えよう。</h2><p>${message}</p></div>${areaGrid()}`;
     }else{
       const top=matched.slice(0,3);
       content=top.map(card).join('');
       if(top.length<3)content+='<p class="hint">今の主目的に合う候補は'+top.length+'エリアです。ほかの楽しみ方は下の一覧から見られます。</p>';
     }
-    return `<section class="fade"><p class="eyebrow">YOUR NEXT LITTLE TRIP</p><h1>今の気分に、<br>合いそうなのは。</h1><p class="result-intro">気になるところを、二人で相談してみよう。<br>${D.travel.origin}からの移動負担も考慮しています。</p>${content}${shortlist()}<details class="notice"><summary>移動の目安について</summary><p>${D.travel.origin}を基準にしています。${D.travel.note}帰宅時刻を保証するものではありません。</p></details><div class="actions">${button('回答を見直す','review','','outline')}${button('もう一度やってみる','reset','','secondary')}</div><details class="notice"><summary>選んだ回答を確認する</summary><ul class="answer-list">${L.questions(answers).map(q=>`<li>${q.title}<strong>${esc(L.label(answers,q.id))}</strong></li>`).join('')}</ul></details>${matched.length?`<details class="notice"><summary>6エリアすべてを見る</summary>${areaGrid()}</details>`:''}${prototype()}</section>`;
+    return `<section class="fade"><p class="eyebrow">YOUR NEXT LITTLE TRIP</p><h1>今の気分に、<br>合いそうなのは。</h1><p class="result-intro">気になるところを、二人で相談してみよう。<br>${D.travel.origin}からの移動負担も考慮しています。</p>${content}${shortlist()}<details class="notice"><summary>移動の目安について</summary><p>${D.travel.origin}を基準にしています。${D.travel.note}帰宅時刻を保証するものではありません。</p></details><div class="actions">${button('回答を見直す','review','','outline')}${button('もう一度やってみる','reset','','secondary')}</div><details class="notice"><summary>選んだ回答を確認する</summary><ul class="answer-list">${L.questions(answers).map(q=>`<li>${q.title}<strong>${esc(L.label(answers,q.id))}</strong></li>`).join('')}</ul></details>${matched.length?`<details class="notice"><summary>すべての候補を見る</summary>${areaGrid()}</details>`:''}${prototype()}</section>`;
   }
   function detail(){
     const d=D.destinations[route.area];
-    return `<section class="fade"><div class="navline"><button class="back" data-action="back">← 結果に戻る</button><span class="step">気になるスポット</span></div>${art(route.area,'detail-art')}<p class="eyebrow">A PLACE TO TALK ABOUT</p><h1>${d.name}</h1><p class="intro">${d.theme}</p><p class="section-label">全部回らなくて大丈夫。気になる場所はある？</p><p class="image-note">画像はAI生成の参考イメージです。実際の施設や提供される料理の写真ではありません。</p>${d.spots.map(([name,description,status],i)=>`<article class="spot illustrated-spot"><div class="spot-images">${(d.spotImages[i]||[d.gallery[0]]).map(picture).join('')}</div><div class="spot-copy"><h3>${name}</h3><p>${description}</p>${status?`<span class="status">${status}</span>`:''}</div></article>`).join('')}<div class="actions">${button('結果に戻る','back','','outline')}</div>${prototype()}</section>`;
+    return `<section class="fade"><div class="navline"><button class="back" data-action="back">← 結果に戻る</button><span class="step">気になるスポット</span></div>${art(route.area,'detail-art')}<p class="eyebrow">A PLACE TO TALK ABOUT</p><h1>${d.name}</h1><p class="intro">${d.theme}</p>${d.planNote?'<p class="intro">'+esc(d.planNote)+'</p><p class="hint">'+esc(d.duration)+'</p>':''}<p class="section-label">全部回らなくて大丈夫。気になる場所はある？</p>${d.textOnly?'':'<p class="image-note">画像はAI生成の参考イメージです。実際の施設や提供される料理の写真ではありません。</p>'}${d.spots.map(([name,description,status],i)=>`<article class="spot illustrated-spot"><div class="spot-images">${(d.spotImages[i]||[d.gallery[0]]).map(picture).join('')}</div><div class="spot-copy"><h3>${name}</h3><p>${description}</p>${status?`<span class="status">${status}</span>`:''}</div></article>`).join('')}<div class="actions">${button('結果に戻る','back','','outline')}</div>${prototype()}</section>`;
   }
   function render(scroll=0){
     if((route.view==='results'||route.view==='detail')&&!L.complete(answers))route={view:'home'};
