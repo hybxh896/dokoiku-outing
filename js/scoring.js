@@ -10,13 +10,14 @@
     const q=questions(a).find(q=>q.id===id);
     if(!q||!q.options.some(o=>o.id===value)) throw new Error('Invalid answer');
     const next={...a,[id]:value};
+    if(id==='detail'&&value==='neither'){delete next.main;delete next.detail;delete next.companion;return next;}
     if(id==='main'&&value!==a.main){delete next.detail; delete next.companion;}
     return next;
   }
-  function complete(a){return questions(a).every(q=>q.options.some(o=>o.id===a[q.id]));}
+  function complete(a){return a.detail!=='neither'&&questions(a).every(q=>q.options.some(o=>o.id===a[q.id]));}
   function label(a,id){const q=questions(a).find(q=>q.id===id);return q?.options.find(o=>o.id===a[id])?.label||'';}
   function rank(a){
-    const specific=a.detail&&a.detail!=='any';
+    const specific=a.detail&&!['any','unknown','neither'].includes(a.detail);
     const results=D.profiles.filter(p=>p.id!=='night'||(a.main==='nature'&&a.detail==='night'&&a.time!=='early')).map(p=>{
       let detail=0;
       if(specific) detail=a.detail==='both'?((p.detail.town||0)+(p.detail.temple||0))/2:(p.detail[a.detail]||0);
@@ -30,7 +31,7 @@
       const mobility=Math.min(travel,time);
       return {...p,mainScore:main,detailScore:detail,companionScore:companion,travelScore:travel,timeScore:time,mobilityScore:mobility,score:main+detail+env+companion+mobility,matched:main>0};
     });
-    const compare=(x,y)=>y.score-x.score||y.mobilityScore-x.mobilityScore||y.mainScore-x.mainScore||x.id.localeCompare(y.id,'en');
+    const compare=(x,y)=>Number(y.matched)-Number(x.matched)||y.score-x.score||y.mobilityScore-x.mobilityScore||y.mainScore-x.mainScore||x.id.localeCompare(y.id,'en');
     return D.scoring.areaOrder.map(area=>results.filter(p=>p.area===area).sort(compare)[0]).sort((x,y)=>y.score-x.score||y.mobilityScore-x.mobilityScore||y.mainScore-x.mainScore||D.scoring.areaOrder.indexOf(x.area)-D.scoring.areaOrder.indexOf(y.area));
   }
   root.DateLogic={questions,answer,complete,label,rank};

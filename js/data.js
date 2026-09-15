@@ -19,6 +19,11 @@
     boat:{title:'どちらの体験が気になる？',options:[option('whirlpool','渦潮など、自然の迫力'),option('city','街の水辺をクルーズ'),option('any','どちらでも')]},
     walk:{title:'どちらを楽しみたい？',options:[option('town','食べ歩き・街並み'),option('temple','お寺や神社へのお参り'),option('both','どちらも')]}
   };
+  Object.values(refinements).forEach(q=>{
+    if(!q.options.some(o=>o.id==='any'))q.options.push(option('any','こだわらない'));
+    q.options.push(option('unknown','まだ決めていない','この質問では好みを絞りません'));
+    q.options.push(option('neither','この中にはない','最初の楽しみ方を選び直す'));
+  });
   const commonQuestions = [
     {id:'travel',eyebrow:'車での移動',title:'車での移動は、どれくらいなら？',hint:'大阪駅周辺を基準にした、大まかな移動負担で比べます。',options:[option('short','なるべく短めがいい'),option('middle','ほどよくドライブしたい'),option('long','長めのドライブもOK')]},
     {id:'time',eyebrow:'過ごせる時間',title:'おでかけに使える時間は？',hint:'夕方に帰りたい日は、移動が長い候補を控えめにします。',options:[option('early','夕方には帰りたい'),option('late','朝から夜まで使える'),option('unknown','まだ決めていない')]},
@@ -26,6 +31,7 @@
     {id:'environment',eyebrow:'好きな空間',title:'屋内と屋外、どちらがいい？',hint:'屋外の景色か、屋内でのんびりか。',options:[option('indoor','屋内中心がいい'),option('any','どちらでもいい'),option('outdoor','屋外を楽しみたい')]},
     {id:'companion',eyebrow:'もうひとつ、楽しむなら',title:'ほかに組み合わせたいことは？',hint:'主目的を大切にしながら、もうひとつ。',options:interests.filter(o=>o.id!=='none').map(o=>option(o.id,o.label)).concat(option('none','特になし'))}
   ];
+  for(const id of ['travel','walking','environment','companion'])commonQuestions.find(q=>q.id===id).options.push(option('unknown','まだ決めていない'));
   const destinations = {
     sanda:{name:'三田',theme:'お店をのぞいて、ひと休み。',icon:'♧',scene:'town',color:'sand',image:null,tags:['買い物','カフェ'],spots:[['神戸三田プレミアム・アウトレット','今回の主役。気になるお店をゆっくり巡ろう。'],['ランチ・カフェ','買い物の合間にひと休み。お店はこれから選びます。','候補を整理中']]},
     awaji:{name:'淡路島',theme:'緑とおいしいものに会いに。',icon:'☀',scene:'island',color:'blue',image:null,tags:['植物','スイーツ'],spots:[['あわじグリーン館','温室の植物を眺めながら、緑の中を散策。'],['いづも庵','名物の玉ねぎを使ったうどんが気になる。'],['幸せのパンケーキ','スイーツを楽しむひととき。席や景観は確認中。'],['淡路島バーガー','ドライブの途中に気になるひと口。店舗は未定。','店舗未定'],['ニジゲンノモリ','知っている場所から候補に。遊ぶ内容はこれから。','参考候補']]},

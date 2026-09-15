@@ -1,6 +1,7 @@
 (function(){
   'use strict';
   const D=window.DateData,L=window.DateLogic,app=document.querySelector('#app');
+  const interested=new Set();
   let answers={},route={view:'home'},epoch=0,pending=null;
   const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const button=(label,action,extra='',style='')=>`<button class="button ${style}" data-action="${action}" ${extra}>${label}</button>`;
@@ -24,7 +25,7 @@
     history[replace?'replaceState':'pushState']({...route,epoch,scroll:0},'',hash);
     render();
   }
-  function reset(){answers={};epoch++;move({view:'home'});}
+  function reset(){answers={};interested.clear();epoch++;move({view:'home'});}
   function home(){
     return `<section class="fade"><p class="eyebrow">LET'S FIND OUR NEXT STOP</p><h1 class="home-title">次どこ行く？<span>その気分から、<br>おでかけしよう。</span></h1><p class="intro">いくつか質問に答えて、<br>おでかけ先を選んでみよう。</p>${art('awaji','hero-art')}<div class="home-meta"><span class="pill">6〜7問・約1分</span><span>車で、気ままにおでかけ。</span></div>${button('はじめる <span class="arrow">→</span>','start')}<p class="subtext">正解はひとつじゃない。二人で相談してみよう。</p><div class="places-strip">${Object.values(D.destinations).map(d=>`<span>${d.name}</span>`).join('')}</div>${prototype()}</section>`;
   }
@@ -38,16 +39,26 @@
   }
   function reasons(p){
     const list=[];
-    if(p.matched)list.push(`${L.label(answers,answers.detail&&answers.detail!=='any'?'detail':'main')}の気分に`);
+    if(p.matched)list.push(`${L.label(answers,answers.detail&&!['any','unknown'].includes(answers.detail)?'detail':'main')}の気分に`);
     if(p.companionScore)list.push(`${L.label(answers,'companion')}も楽しめる候補`);
     if(p.matched&&answers.environment===p.environment)list.push(`${answers.environment==='indoor'?'屋内':'屋外'}中心で楽しめる`);
     return list;
   }
   function card(p,index){
-    const d=D.destinations[p.area],rs=reasons(p),featured=index===0;
-    const envMismatch=p.environment&&answers.environment!=='any'&&D.scoring.environment[answers.environment]?.[p.environment]<0;
-    const companionPending=answers.companion!=='none'&&!p.companionScore;
-    return `<article class="result-card ${featured?'':'small-card'}">${art(p.area,'',p.imageKey)}<div class="card-body"><span class="rank-label">${p.matched?`気分に合う候補 ${index+1}`:'別の楽しみ方なら'}</span><h3>${d.name}</h3><p class="theme">${p.name}</p><p class="hint">車での移動：${D.travel.labels[p.travelBand]}（${D.travel.origin}からの目安）</p>${p.timeScore<0?'<p class="caution">夕方の帰宅を希望しているため、往復の移動負担を考えて順位を控えめにしています。出発時刻と滞在時間を確認して相談しよう。</p>':p.travelScore<0?'<p class="caution">移動の希望より長めのため、順位を控えめにしています。</p>':''}<div class="tags">${p.tags.map(t=>`<span>${t}</span>`).join('')}</div>${rs.length?`<div class="reason-box"><p>こんな回答が決め手でした</p><ul>${rs.map(r=>`<li>${esc(r)}</li>`).join('')}</ul></div>`:'<p class="hint">選んだ主目的とは違うけれど、こんな場所もあります。</p>'}${envMismatch?`<p class="caution">${p.environment==='mixed'?'屋内と屋外を行き来する':p.environment==='outdoor'?'屋外中心の':'屋内中心の'}候補です。空間の希望とは少し異なります。</p>`:''}${!p.environment&&answers.environment!=='any'?'<p class="caution">屋内・屋外の詳しい利用条件は確認中です。</p>':''}${answers.walking==='low'?`<p class="caution">${p.walkingNote}</p>`:''}${p.id==='night'?'<p class="caution">夜の滞在と道路の営業確認が必要です。参拝施設の営業時間とは異なります。</p>':''}${p.companions[answers.companion]?`<p class="hint">${p.companions[answers.companion].reason}</p>`:''}${featured&&companionPending?'<p class="hint">組み合わせたい希望については、具体的な候補・移動を確認中です。</p>':''}${button('候補を見る <span class="arrow">↗</span>','detail',`data-area="${p.area}"`,featured?'':'outline')}</div></article>`;
+    const d=D.destinations[p.area],rs=reasons(p).slice(0,2),notes=[];
+    const hasEnv=['indoor','outdoor'].includes(answers.environment);
+    if(hasEnv&&p.environment&&D.scoring.environment[answers.environment]?.[p.environment]<0)notes.push('屋内・屋外の希望とは少し異なる候補です。');
+    if(hasEnv&&!p.environment)notes.push('屋内・屋外の利用条件は確認中です。');
+    if(answers.walking==='low')notes.push(p.walkingNote);
+    if(p.id==='night')notes.push('夜の滞在と道路の営業時間の確認が必要です。');
+    if(p.companions[answers.companion])notes.push(p.companions[answers.companion].reason);
+    if(!['none','unknown'].includes(answers.companion)&&!p.companionScore)notes.push('組み合わせたい希望の具体的な候補・移動は確認中です。');
+    const caution=p.timeScore<0?'夕方の帰宅を希望しているため、往復の移動時間に余裕を。':p.travelScore<0?'移動は希望より長めです。':notes.shift()||'';
+    return `<article class="result-card"><header class="card-body"><span class="rank-label">気分に合う候補 ${index+1}</span><h3>${p.name}</h3><p class="area-name">${d.name}</p></header>${art(p.area,'',p.imageKey)}<div class="card-body"><ul class="brief-reasons">${rs.map(r=>'<li>'+esc(r)+'</li>').join('')}</ul><p class="travel-summary">車での移動：${D.travel.labels[p.travelBand]}</p>${caution?'<p class="caution">'+esc(caution)+'</p>':''}${notes.length?'<details class="notice"><summary>詳しい条件</summary><ul>'+notes.map(n=>'<li>'+esc(n)+'</li>').join('')+'</ul></details>':''}<div class="card-actions">${button('スポットを見る','detail','data-area="'+p.area+'"','outline')}<button class="button interest-button" data-action="interest" data-profile="${p.id}" aria-pressed="${interested.has(p.id)}">${interested.has(p.id)?'✓ 気になるに追加済み':'気になる'}</button></div></div></article>`;
+  }
+  function shortlist(){
+    const selected=D.profiles.filter(p=>interested.has(p.id));
+    return '<aside class="shortlist" aria-live="polite"><h2>気になる候補（'+selected.length+'）</h2>'+(selected.length?'<ul>'+selected.map(p=>'<li>'+esc(p.name)+' <button class="back" data-action="interest" data-profile="'+p.id+'" aria-label="'+esc(p.name)+'を外す">外す</button></li>').join('')+'</ul>':'<p>気になる場所を選んで、二人で相談しよう。</p>')+'<p class="hint">再読み込み・やり直しで消えます。</p></aside>';
   }
   function areaGrid(){return `<div class="area-grid">${Object.entries(D.destinations).map(([id,d])=>`<button class="area-link" data-action="detail" data-area="${id}">${d.name}<span>${d.tags.join(' · ')}</span></button>`).join('')}</div>`;}
   function results(){
@@ -57,10 +68,11 @@
       const message=answers.detail==='night'&&answers.time==='early'?'夜景を楽しむには、夜まで過ごせる日がよさそう。時間を見直すか、昼の景色から探してみよう。':answers.detail==='seafood'?'海鮮のお店は、まだ候補を整理中です。好みに合わないのではなく、この試作版では十分に比較できません。':answers.detail==='city'?'街のクルーズは運航情報を確認中です。候補一覧には残しています。':answers.detail==='view'?'景色を楽しめるカフェの席・施設は確認中です。まずはエリアの候補を見てみよう。':'まだ目的が決まっていなくても大丈夫。6つのエリアを見ながら、気になるところを探してみよう。';
       content=`<div class="empty"><h2>候補を見ながら、考えよう。</h2><p>${message}</p></div>${areaGrid()}`;
     }else{
-      const top=matched.concat(ranked.filter(p=>!p.matched)).slice(0,3);
+      const top=matched.slice(0,3);
       content=top.map(card).join('');
+      if(top.length<3)content+='<p class="hint">今の主目的に合う候補は'+top.length+'エリアです。ほかの楽しみ方は下の一覧から見られます。</p>';
     }
-    return `<section class="fade"><p class="eyebrow">YOUR NEXT LITTLE TRIP</p><h1>今の気分に、<br>合いそうなのは。</h1><p class="result-intro">気になるところを、二人で相談してみよう。<br>${D.travel.origin}からの移動負担も考慮しています。</p><p class="hint">${D.travel.note}帰宅時刻を保証するものではありません。</p>${content}<div class="actions">${button('回答を見直す','review','','outline')}${button('もう一度やってみる','reset','','secondary')}</div><details class="notice"><summary>選んだ回答を確認する</summary><ul class="answer-list">${L.questions(answers).map(q=>`<li>${q.title}<strong>${esc(L.label(answers,q.id))}</strong></li>`).join('')}</ul></details>${matched.length?`<details class="notice"><summary>6エリアすべてを見る</summary>${areaGrid()}</details>`:''}${prototype()}</section>`;
+    return `<section class="fade"><p class="eyebrow">YOUR NEXT LITTLE TRIP</p><h1>今の気分に、<br>合いそうなのは。</h1><p class="result-intro">気になるところを、二人で相談してみよう。<br>${D.travel.origin}からの移動負担も考慮しています。</p>${content}${shortlist()}<details class="notice"><summary>移動の目安について</summary><p>${D.travel.origin}を基準にしています。${D.travel.note}帰宅時刻を保証するものではありません。</p></details><div class="actions">${button('回答を見直す','review','','outline')}${button('もう一度やってみる','reset','','secondary')}</div><details class="notice"><summary>選んだ回答を確認する</summary><ul class="answer-list">${L.questions(answers).map(q=>`<li>${q.title}<strong>${esc(L.label(answers,q.id))}</strong></li>`).join('')}</ul></details>${matched.length?`<details class="notice"><summary>6エリアすべてを見る</summary>${areaGrid()}</details>`:''}${prototype()}</section>`;
   }
   function detail(){
     const d=D.destinations[route.area];
@@ -78,6 +90,12 @@
   app.addEventListener('click',event=>{
     const el=event.target.closest('[data-action]');if(!el||pending)return;
     switch(el.dataset.action){
+      case 'interest':{
+        const id=el.dataset.profile;if(!D.profiles.some(p=>p.id===id))break;
+        interested.has(id)?interested.delete(id):interested.add(id);
+        const scroll=window.scrollY;render(scroll);
+        app.querySelector('[data-profile="'+id+'"]')?.focus({preventScroll:true});break;
+      }
       case 'start':move({view:'question',step:0});break;
       case 'back':history.back();break;
       case 'review':move({view:'question',step:0});break;
@@ -86,6 +104,7 @@
       case 'answer':{
         const id=el.dataset.question;
         answers=L.answer(answers,id,el.dataset.value);
+        if(id==='detail'&&el.dataset.value==='neither'){move({view:'question',step:0},true);break;}
         app.querySelectorAll('.option').forEach(b=>{const selected=b===el;b.disabled=true;b.classList.toggle('selected',selected);b.setAttribute('aria-pressed',String(selected));b.querySelector('.circle').textContent=selected?'✓':'';});
         pending=setTimeout(()=>{
           pending=null;
