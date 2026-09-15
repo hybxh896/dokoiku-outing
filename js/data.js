@@ -5,33 +5,36 @@
   const interests = [
     option('food','おいしいごはん','おでかけ先で、おいしいものを'),
     option('cafe','カフェ・スイーツ','甘いものと、ひと休み'),
-    option('nature','景色・植物','海や山、緑に会いに'),
+    option('nature','景色・自然','海や山、緑に会いに'),
     option('shopping','洋服や雑貨の買い物','気になるお店をのぞきたい'),
     option('art','美術館でアート','作品をゆっくり楽しみたい'),
-    option('boat','船などの体験','いつもと違う景色を見たい'),
+    option('boat','船の体験','いつもと違う景色を見たい'),
     option('walk','街並み散策・お参り','歩きながら、寄り道も'),
     option('none','まだ決めていない','候補を見て考えたい')
   ];
-  const refinements = {
-    food:{title:'何を食べたい気分？',options:[option('beef','焼肉・牛肉料理'),option('seafood','海鮮'),option('noodles','麺'),option('any','こだわらない')]},
-    cafe:{title:'どんな楽しみ方がいい？',options:[option('sweets','スイーツを目当てに'),option('view','景色も楽しみたい'),option('any','こだわらない')]},
-    nature:{title:'どんな景色が気になる？',options:[option('sea','海'),option('lake','湖・山'),option('green','植物・緑'),option('night','夜景'),option('any','こだわらない')]},
-    boat:{title:'どちらの体験が気になる？',options:[option('whirlpool','渦潮など、自然の迫力'),option('city','街の水辺をクルーズ'),option('any','どちらでも')]},
-    walk:{title:'どちらを楽しみたい？',options:[option('town','食べ歩き・街並み'),option('temple','お寺や神社へのお参り'),option('both','どちらも')]}
+  const refinements={
+    food:{title:'何を食べたい気分？',options:[option('noodles','うどん'),option('beef','肉料理','現在は牛肉料理が中心です'),option('seafood','海鮮'),option('other','ほかのものがいい','食事の希望は残して、候補を見て考える'),option('any','特に決めていない')]},
+    cafe:{title:'どんなお茶の時間がいい？',options:[option('sweets','甘いものを楽しみたい'),option('view','景色を見ながら過ごしたい'),option('any','どちらでもいい')]},
+    nature:{title:'どんな景色が気になる？',options:[option('sea','海'),option('lake','湖や山'),option('green','植物・緑'),option('night','夜景'),option('any','特に決めていない')]},
+    boat:{title:'どちらの体験が気になる？',options:[option('whirlpool','渦潮を見たい'),option('city','街の水辺を巡りたい'),option('any','どちらでもいい')]},
+    walk:{title:'どんな街歩きが気になる？',options:[option('town','街並み・食べ歩き'),option('temple','お寺や神社'),option('both','両方気になる','どちらか一方の候補でもOK'),option('any','特に決めていない')]}
   };
   Object.values(refinements).forEach(q=>{
-    if(!q.options.some(o=>o.id==='any'))q.options.push(option('any','こだわらない'));
-    q.options.push(option('unknown','まだ決めていない','この質問では好みを絞りません'));
-    q.options.push(option('neither','この中にはない','最初の楽しみ方を選び直す'));
+    if(!q.options.some(o=>o.id==='other'))q.options.push(option('other','ほかのものがいい','この分野の希望は残します'));
+    q.options.push(option('neither','楽しみ方を選び直す'));
   });
-  const commonQuestions = [
-    {id:'travel',eyebrow:'車での移動',title:'車での移動は、どれくらいなら？',hint:'大阪駅周辺を基準にした、大まかな移動負担で比べます。',options:[option('short','なるべく短めがいい'),option('middle','ほどよくドライブしたい'),option('long','長めのドライブもOK')]},
-    {id:'time',eyebrow:'過ごせる時間',title:'おでかけに使える時間は？',hint:'夕方に帰りたい日は、移動が長い候補を控えめにします。',options:[option('early','夕方には帰りたい'),option('late','朝から夜まで使える'),option('unknown','まだ決めていない')]},
-    {id:'walking',eyebrow:'現地での過ごし方',title:'現地で歩く量は？',hint:'歩行量を調査中のため、結果の注意書きに反映します。',options:[option('low','移動を少なめにしたい'),option('medium','休憩しながらなら歩ける'),option('high','散策もたっぷり楽しみたい')]},
-    {id:'environment',eyebrow:'好きな空間',title:'屋内と屋外、どちらがいい？',hint:'屋外の景色か、屋内でのんびりか。',options:[option('indoor','屋内中心がいい'),option('any','どちらでもいい'),option('outdoor','屋外を楽しみたい')]},
-    {id:'companion',eyebrow:'もうひとつ、楽しむなら',title:'ほかに組み合わせたいことは？',hint:'主目的を大切にしながら、もうひとつ。',options:interests.filter(o=>o.id!=='none').map(o=>option(o.id,o.label)).concat(option('none','特になし'))}
+  const scheduleQuestions=[
+    {id:'duration',eyebrow:'まずは、予定の大きさから',title:'今回はどれくらいのおでかけにしたい？',hint:'短く会う日も、ゆっくり出かける日も。',options:[option('meal','ごはんだけ'),option('tea','ごはんとお茶くらい'),option('half','半日くらい'),option('day','一日ゆっくり'),option('unknown','まだ決めていない')]},
+    {id:'start',eyebrow:'集合の時間',title:'何時ごろから会えそう？',hint:'移動や現地で過ごす時間も考えて候補を選びます。',options:[option('morning','朝から'),option('noon','お昼ごろ'),option('afternoon','午後から'),option('evening','夕方から'),option('unknown','まだ決めていない')]}
   ];
-  for(const id of ['travel','walking','environment','companion'])commonQuestions.find(q=>q.id===id).options.push(option('unknown','まだ決めていない'));
+  const commonQuestions=[
+    {id:'travel',eyebrow:'車での移動',title:'車での移動はどれくらいなら？',hint:'大阪駅周辺を基準にした、大まかな負担で比べます。',options:[option('short','なるべく短め'),option('middle','ほどよくドライブ'),option('long','長めでも大丈夫'),option('unknown','まだ決めていない')]},
+    {id:'extras',eyebrow:'ここまででも診断できます',title:'もう少し好みを伝える？',hint:'歩く量や帰りたい時間など、追加の希望を選べます。',options:[option('skip','このまま結果を見る'),option('yes','細かな希望も伝える')]},
+    {id:'walking',eyebrow:'任意の希望',title:'歩く量の希望は？',hint:'座って過ごしたい場合は、結果に歩行の注意を添えます。',options:[option('low','座って過ごす時間を多めに'),option('medium','休憩しながら少し歩きたい'),option('high','散策も楽しみたい'),option('unknown','特に希望なし')]},
+    {id:'environment',eyebrow:'任意の希望',title:'過ごす場所の希望は？',options:[option('indoor','屋内中心'),option('outdoor','屋外も楽しみたい'),option('any','どちらでもいい')]},
+    {id:'time',eyebrow:'任意の希望',title:'帰りたい時間はある？',hint:'目安として使います。帰宅時刻を保証するものではありません。',options:[option('early','夕方まで'),option('earlynight','早めの夜まで'),option('unknown','特に決めていない')]},
+    {id:'companion',eyebrow:'余裕があるなら',title:'余裕があれば、何を足したい？',hint:'主目的を大切にして、無理のない範囲で。',options:[option('cafe','お茶・スイーツ'),option('shopping','少し買い物'),option('walk','少し散歩'),option('none','追加せずゆっくり'),option('unknown','当日決めたい')]}
+  ];
   const destinations = {
     sanda:{name:'三田',theme:'お店をのぞいて、ひと休み。',icon:'♧',scene:'town',color:'sand',image:null,tags:['買い物','カフェ'],spots:[['神戸三田プレミアム・アウトレット','今回の主役。気になるお店をゆっくり巡ろう。'],['ランチ・カフェ','買い物の合間にひと休み。お店はこれから選びます。','候補を整理中']]},
     awaji:{name:'淡路島',theme:'緑とおいしいものに会いに。',icon:'☀',scene:'island',color:'blue',image:null,tags:['植物','スイーツ'],spots:[['あわじグリーン館','温室の植物を眺めながら、緑の中を散策。'],['いづも庵','名物の玉ねぎを使ったうどんが気になる。'],['幸せのパンケーキ','スイーツを楽しむひととき。席や景観は確認中。'],['淡路島バーガー','ドライブの途中に気になるひと口。店舗は未定。','店舗未定'],['ニジゲンノモリ','知っている場所から候補に。遊ぶ内容はこれから。','参考候補']]},
@@ -40,7 +43,7 @@
     shiga:{name:'滋賀',theme:'湖と山の景色、ごほうびのごはん。',icon:'△',scene:'lake',color:'mint',image:null,tags:['湖・山','近江牛'],spots:[['びわ湖テラス','湖と山の広がりを眺める展望スポット。天候・営業状況を確認して。'],['メタセコイア並木','季節ごとに表情が変わる並木道。ほかの候補とは距離があります。'],['比叡山のお参り','山のお寺へ。参拝する区域はこれから選びます。'],['夢見が丘の夜景','比叡山の夜景の暫定候補。夜まで過ごせる日に。','暫定候補'],['農家レストランだいきち 大津堅田店','近江牛を楽しむ食事の候補。景色スポットとの移動は確認中。']]},
     kyoto:{name:'天橋立',theme:'海を見晴らして、松並木を歩く。',icon:'≈',scene:'sea',color:'blue',image:null,tags:['海の展望','散策'],spots:[['天橋立ビューランド','高いところから、海と松並木の景色を眺めよう。'],['天橋立の松並木','景色を見ながら散策。全部を渡らず、短く歩く楽しみ方も。'],['海鮮グルメ','海鮮のお店も候補に。具体的なお店はこれから。','店舗未定']]}
   };
-  destinations.byakuan={name:'神崎川・白庵',theme:'白庵でうどん、気が向いたらケーキ',textOnly:true,planNote:'好きなうどんを食べることがメインの、車で出かける短めのプラン。',duration:'食事とお茶で2〜3時間程度が目安。移動・待ち時間は別です。',tags:['うどん','短め','ケーキは任意'],spots:[['神崎川の白庵でうどん','食事だけで解散しても予定どおり。好きなうどんを楽しもう。'],['余裕があれば、ケーキやスイーツ','お店は事前に決め込まず、当日の気分と元気に合わせて。','任意の寄り道'],['近めに寄るなら：豊中・少路〜緑丘','ケーキやスイーツのお店を当日の気分で選ぶ候補エリア。','店舗未定'],['ドライブも楽しむなら：箕面・牧落〜桜井、小野原方面','車での寄り道も楽しみたい日に。具体的なお店と移動時間はこれから。','店舗未定'],['お茶を楽しんだら解散','カフェを入れても、食事とお茶で全体2〜3時間程度。移動・待ち時間は別に考えよう。']]};
+  destinations.byakuan={name:'大阪市淀川区｜白庵（神崎川駅近く）',theme:'白庵でうどん、気が向いたらケーキ',textOnly:false,planNote:'好きなうどんを食べることがメインの、車で出かける短めのプラン。',duration:'食事とお茶で2〜3時間程度が目安。移動・待ち時間は別です。',tags:['うどん','短め','ケーキは任意'],spots:[['神崎川の白庵でうどん','食事だけで解散しても予定どおり。好きなうどんを楽しもう。'],['余裕があれば、ケーキやスイーツ','お店は事前に決め込まず、当日の気分と元気に合わせて。','任意の寄り道'],['近めに寄るなら：豊中・少路〜緑丘','ケーキやスイーツのお店を当日の気分で選ぶ候補エリア。','店舗未定'],['ドライブも楽しむなら：箕面・牧落〜桜井、小野原方面','車での寄り道も楽しみたい日に。具体的なお店と移動時間はこれから。','店舗未定'],['お茶を楽しんだら解散','カフェを入れても、食事とお茶で全体2〜3時間程度。移動・待ち時間は別に考えよう。']]};
   const p=(id,area,name,main,detail,environment,walkingNote,companions={})=>({id,area,name,main,detail,environment,walkingNote,companions});
   const profiles=[
     p('outlet','sanda','アウトレットで買い物',{shopping:12},{},'mixed','お店を巡るため歩きます。見るお店を絞ると過ごしやすそう。'),
@@ -67,7 +70,7 @@
     p('okage-cafe','mie','おかげ横丁と五十鈴川カフェ',{cafe:12,walk:12,nature:6},{view:4,sweets:4,town:4},'mixed','街並みを歩き、川沿いのカフェでひと休みする候補です。'),
     p('city-cruise','tokushima','ひょうたん島クルーズで街の水辺へ',{boat:12,nature:6},{city:4},null,'乗り場は徳島市中心部。鳴門の観潮船とは別の場所です。乗降の動線は確認中。')
   );
-  profiles.push(p('byakuan','byakuan','白庵でうどん、気が向いたらケーキ',{food:12},{noodles:4},'indoor','食事が主役。待ち時間や駐車場からの移動は当日確認して。'));
+  profiles.push(p('byakuan','byakuan','近場でうどん、気が向いたらスイーツ',{food:12},{noodles:4},'indoor','食事が主役。待ち時間や駐車場からの移動は当日確認して。'));
   const profileTags={byakuan:['うどん','短め','ケーキは任意'],outlet:['買い物','お店巡り'],garden:['植物','温室'],pancake:['スイーツ'],udon:['うどん'],museum:['アート','屋内'],boat:['観潮船'],okage:['食べ歩き','街並み'],terrace:['湖の展望'],trees:['並木','緑'],temple:['参拝'],night:['夜景'],beef:['近江牛'],bridge:['海の展望','松並木']};
   profiles.forEach(p=>{p.tags=profileTags[p.id]||[];});
   profiles.find(p=>p.id==='okage-seafood').tags=['海鮮','横丁散策'];
@@ -86,22 +89,24 @@
   }};
   const imageAssets={};
   for(const [key,alt] of Object.entries({okage:'商家の通りで食べ歩きを楽しむイメージ','ise-udon':'太い麺とたまりだれの伊勢うどんのイメージ','onion-udon':'揚げた玉ねぎとうどんのイメージ',night:'湖と街の灯りを見下ろす夜景のイメージ',pines:'海辺の松林を歩くイメージ',outlet:'アウトレットで買い物を楽しむイメージ',garden:'温室の植物を眺めるイメージ',pancake:'パンケーキのイメージ',burger:'玉ねぎ入りバーガーのイメージ',forest:'森の中のレクリエーションのイメージ'}))imageAssets[key]={src:'images/generated/'+key+'.webp',alt:alt+'（AI生成）',width:1536,height:1024};
-  const profileImages={outlet:'outlet',garden:'garden',pancake:'pancake',udon:'onion-udon',night:'night',okage:'okage','okage-seafood':'okage','okage-udon':'ise-udon','okage-cafe':'okage',museum:'museum',boat:'whirlpool','city-cruise':'cruise',terrace:'lake',trees:'trees',temple:'temple',beef:'omibeef',bridge:'amanohashidate'};
+  const profileImages={byakuan:'ise-udon',outlet:'outlet',garden:'garden',pancake:'pancake',udon:'onion-udon',night:'night',okage:'okage','okage-seafood':'okage','okage-udon':'ise-udon','okage-cafe':'okage',museum:'museum',boat:'whirlpool','city-cruise':'cruise',terrace:'lake',trees:'trees',temple:'temple',beef:'omibeef',bridge:'amanohashidate'};
   profiles.forEach(p=>{p.imageKey=profileImages[p.id];});
   const galleries={sanda:['outlet','steak','coffee','dinner'],awaji:['garden','pancake','onion-udon','burger'],tokushima:['whirlpool','museum','cruise','ramen'],mie:['okage','ise-udon','beef','eel'],shiga:['lake','trees','temple','omibeef'],kyoto:['amanohashidate','seafood','lift','pines']};
   const spotImages={sanda:[['outlet'],['steak','coffee']],awaji:[['garden'],['onion-udon'],['pancake'],['burger'],['forest']],tokushima:[['museum'],['whirlpool'],['cruise'],['ramen','seafood']],mie:[['okage'],['shrine'],['beef'],['road'],['eel']],shiga:[['lake'],['trees'],['temple'],['night'],['omibeef']],kyoto:[['amanohashidate'],['pines'],['seafood']]};
   // Avoid attaching a ramen image to an udon dish: use a general food visual.
 
   spotImages.mie.push(['seafood'],['ise-udon'],['coffee']);
-  galleries.byakuan=[];spotImages.byakuan=destinations.byakuan.spots.map(()=>[]);
+  galleries.byakuan=['ise-udon','pancake'];spotImages.byakuan=[['ise-udon'],['pancake'],[],[],[]];
+  destinations.byakuan.imageNote='料理・スイーツのAI参考画像です。白庵の料理写真ではありません。パンケーキの訪問先も未定です。';
   Object.keys(destinations).forEach(id=>{destinations[id].gallery=galleries[id];destinations[id].spotImages=spotImages[id];});
   const scoring={direct:12,partial:6,detailDirect:4,detailPartial:2,companionMax:4,environment:{indoor:{indoor:0,mixed:-2,outdoor:-4},outdoor:{indoor:-4,mixed:-1,outdoor:0}},areaOrder:Object.keys(destinations)};
   // Editorial relative burden, not measured journey times or live routing.
   const travel={origin:'大阪駅周辺',note:'高速道路利用を想定した暫定の区分です。渋滞・休憩・現地での移動は含みません。',labels:{near:'比較的短め',middle:'中くらい',far:'長め'},penalties:{short:{near:0,middle:-3,far:-6},middle:{near:0,middle:0,far:-2},long:{near:0,middle:0,far:0}}};
-  travel.timePenalties={early:{near:0,middle:-2,far:-6}};
+  travel.timePenalties={early:{near:0,middle:-2,far:-6},earlynight:{near:0,middle:0,far:-3}};
   const travelBands={byakuan:'near',outlet:'near',garden:'middle',pancake:'middle',udon:'middle',museum:'far',boat:'far',okage:'far',terrace:'middle',trees:'far',temple:'middle',night:'middle',beef:'middle',bridge:'far','okage-seafood':'far','okage-udon':'far','okage-cafe':'far','city-cruise':'far'};
   profiles.forEach(p=>{p.travelBand=travelBands[p.id];});
-  const data={interests,refinements,commonQuestions,destinations,profiles,scoring,referenceImages,travel,imageAssets};
+  const schedulePolicy={shortDurations:['meal','tea'],shortProfiles:['byakuan'],lateStarts:['afternoon','evening'],eveningProfiles:['byakuan','night','outlet']};
+  const data={schedulePolicy,interests,refinements,commonQuestions,scheduleQuestions,destinations,profiles,scoring,referenceImages,travel,imageAssets};
   root.DateData=data;
   if(typeof module!=='undefined'&&module.exports) module.exports=data;
 })(typeof globalThis!=='undefined'?globalThis:window);
