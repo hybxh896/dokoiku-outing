@@ -119,7 +119,7 @@
     const el=event.target.closest('[data-action]');if(!el||pending)return;
     switch(el.dataset.action){
       case 'home':move({view:'home'});break;
-      case 'catalog':move({view:'catalog',filter:el.dataset.filter||(!L.complete(answers)?'all':'matched')});break;
+      case 'catalog':move({view:'catalog',filter:el.dataset.filter||(!L.complete(answers)||!plans().some(p=>p.matched)?'all':'matched')});break;
       case 'filter':move({view:'catalog',filter:el.dataset.filter},true);break;
       case 'results':move({view:'results'});break;
       case 'start':move({view:'question',step:0});break;
