@@ -27,7 +27,7 @@
   }
   function reset(){answers={};epoch++;move({view:'home'});}
   function home(){
-    return `<section class="fade"><p class="eyebrow">LET'S FIND OUR NEXT STOP</p><h1 class="home-title">次どこ行く？<span>今の気分で、<br>行き先を選ぼう。</span></h1><p class="intro">ごはんだけの日も、遠出したい日も。<br>質問に答えて、候補を探してみよう。</p>${art('awaji','hero-art')}<div class="home-meta"><span class="pill">まずは5〜6問</span><span>車で、気ままにおでかけ。</span></div>${button('はじめる <span class="arrow">→</span>','start')}<p class="subtext">正解はひとつじゃない。二人で相談してみよう。</p><div class="places-strip">${Object.values(D.destinations).map(d=>`<span>${d.name}</span>`).join('')}</div>${prototype()}</section>`;
+    return `<section class="fade"><p class="eyebrow">LET'S FIND OUR NEXT STOP</p><h1 class="home-title">次どこ行く？<span>今の気分で、<br>行き先を選ぼう。</span></h1><p class="intro">ごはんだけの日も、遠出したい日も。<br>質問に答えて、候補を探してみよう。</p>${art('awaji','hero-art')}<div class="home-meta"><span class="pill">まずは5〜6問</span><span>車で、気ままにおでかけ。</span></div>${button('はじめる <span class="arrow">→</span>','start')}${button('おでかけの候補を一覧で見る','catalog','data-filter="all"','outline')}<p class="subtext">正解はひとつじゃない。二人で相談してみよう。</p><div class="places-strip">${Object.values(D.destinations).map(d=>`<span>${d.name}</span>`).join('')}</div>${prototype()}</section>`;
   }
   function question(){
     const qs=L.questions(answers);route.step=Math.max(0,Math.min(route.step||0,qs.length-1));
@@ -60,7 +60,7 @@
     return `<article class="result-card"><header class="card-body"><span class="rank-label">気分に合う候補 ${index+1}</span><h3>${p.name}</h3><p class="area-name">${d.name}</p></header>${art(p.area,'',p.imageKey)}<div class="card-body"><ul class="brief-reasons">${rs.map(r=>'<li>'+esc(r)+'</li>').join('')}</ul><p class="travel-summary">車での移動：${D.travel.labels[p.travelBand]}</p>${caution?'<p class="caution">'+esc(caution)+'</p>':''}${notes.length?'<details class="notice"><summary>出かける前に</summary><ul>'+notes.map(n=>'<li>'+esc(n)+'</li>').join('')+'</ul></details>':''}<div class="card-actions">${button('スポットを見る','detail','data-profile="'+D.planGroup(p.id)+'"','outline')}</div></div></article>`;
   }
   function plans(){
-    const scored=L.rank(answers,true),groups=new Map();
+    const scored=L.complete(answers)?L.rank(answers,true):D.profiles,groups=new Map();
     for(const p of scored){const id=D.planGroup(p.id);if(!groups.has(id))groups.set(id,{...p,id,name:D.profiles.find(x=>x.id===id).name});}
     return [...groups.values()];
   }
@@ -72,8 +72,13 @@
     return '今回の条件に合う候補です。';
   }
   function catalog(){
-    const all=route.filter==='all',items=plans().filter(p=>all||p.matched);
-    return '<section class="fade"><h1>おでかけの候補</h1><p>行きたい場所を選んで、周辺の寄り道も見てみよう。</p><div class="catalog-tabs">'+['matched','all'].map(f=>'<button class="button outline" data-action="filter" data-filter="'+f+'" aria-pressed="'+(route.filter===f)+'">'+(f==='all'?'すべての候補':'今回の条件に合う候補')+'</button>').join('')+'</div><p>'+items.length+'件のプラン</p>'+(items.length?'':'<p>今の条件に合う候補はありません。「すべての候補」も見てみよう。</p>')+items.map(p=>'<article class="spot catalog-card"><h2>'+esc(p.name)+'</h2><p>'+esc(D.destinations[p.area].name)+'</p><p>車での移動：'+D.travel.labels[p.travelBand]+'</p><p class="hint">'+esc(mismatch(p))+'</p>'+button('詳しく見る','detail','data-profile="'+p.id+'"','outline')+'</article>').join('')+button('診断結果に戻る','results','','outline')+button('条件を変える','review','','outline')+'</section>';
+    const complete=L.complete(answers),all=!complete||route.filter==='all',items=plans().filter(p=>all||p.matched);
+    const tabs=complete?'<div class="catalog-tabs">'+['matched','all'].map(f=>'<button class="button outline" data-action="filter" data-filter="'+f+'" aria-pressed="'+(route.filter===f)+'">'+(f==='all'?'すべての候補':'今回の条件に合う候補')+'</button>').join('')+'</div>':'';
+    const cards=items.map(p=>{
+      const d=D.destinations[p.area];
+      return '<article class="spot catalog-card">'+art(p.area,'catalog-art',p.imageKey)+'<div class="catalog-copy"><h2>'+esc(p.name)+'</h2><p>'+esc(d.name)+'</p><p>車での移動：'+D.travel.labels[p.travelBand]+'</p>'+(complete?'<p class="hint">'+esc(mismatch(p))+'</p>':'')+'<details class="catalog-spots"><summary>同じエリアのスポットを見る</summary><ul>'+d.spots.map(([name])=>'<li>'+esc(name)+'</li>').join('')+'</ul></details>'+button('詳しく見る','detail','data-profile="'+p.id+'"','outline')+'</div></article>';
+    }).join('');
+    return '<section class="fade"><h1>おでかけの候補</h1><p>行きたい場所を選んで、周辺の寄り道も見てみよう。</p>'+tabs+'<p class="catalog-count">'+items.length+'件のプラン</p><p class="hint">寄り道のお店やスポットは、同じエリアのプランにまとめています。</p>'+(items.length?'':'<p>今の条件に合う候補はありません。「すべての候補」も見てみよう。</p>')+cards+(complete?button('診断結果に戻る','results','','outline')+button('条件を変える','review','','outline'):button('質問に答えて絞り込む','start'))+button('ホームに戻る','home','','outline')+'</section>';
   }
   function results(){
     const ranked=L.rank(answers),matched=ranked.filter(p=>p.matched);
@@ -99,10 +104,10 @@
       const cards=ids.map(i=>{const [name,description,status]=d.spots[i];return '<article class="spot illustrated-spot"><div class="spot-images">'+(d.spotImages[i]||[]).map(picture).join('')+'</div><div class="spot-copy"><h3>'+esc(name)+'</h3><p>'+esc(description)+'</p>'+(status?'<span class="status">'+esc(status)+'</span>':'')+'</div></article>';}).join('');
       return key!=='main'&&answers.duration==='meal'?'<details class="notice"><summary>'+title+'（任意）</summary><p>'+note+'</p>'+cards+'</details>':'<section class="plan-section"><h2>'+title+'</h2><p class="hint">'+note+'</p>'+cards+'</section>';
     };
-    return '<section class="fade">'+button(route.from==='catalog'?'候補一覧に戻る':'診断結果に戻る','back','','outline')+'<h1>'+esc(p.name)+'</h1><p>'+esc(d.name)+'</p>'+art(p.area,'detail-art',p.imageKey)+'<p>全部回らなくて大丈夫。行きたいところだけ選ぼう。</p>'+(d.duration?'<p>'+esc(d.duration)+'</p>':'')+groups.map(([key,title])=>section(key,title)).join('')+button(route.from==='catalog'?'候補一覧に戻る':'診断結果に戻る','back','','outline')+(route.from==='catalog'?button('診断結果に戻る','results','','outline'):button('ほかの候補も見る','catalog','','outline'))+'</section>';
+    return '<section class="fade">'+button(route.from==='catalog'?'候補一覧に戻る':'診断結果に戻る','back','','outline')+'<h1>'+esc(p.name)+'</h1><p>'+esc(d.name)+'</p>'+art(p.area,'detail-art',p.imageKey)+'<p>全部回らなくて大丈夫。行きたいところだけ選ぼう。</p>'+(d.duration?'<p>'+esc(d.duration)+'</p>':'')+groups.map(([key,title])=>section(key,title)).join('')+button(route.from==='catalog'?'候補一覧に戻る':'診断結果に戻る','back','','outline')+(route.from==='catalog'?(L.complete(answers)?button('診断結果に戻る','results','','outline'):button('質問に答えて絞り込む','start')):button('ほかの候補も見る','catalog','','outline'))+'</section>';
   }
   function render(scroll=0){
-    if((route.view==='results'||route.view==='detail'||route.view==='catalog')&&!L.complete(answers))route={view:'home'};
+    if(route.view==='results'&&!L.complete(answers))route={view:'home'};
     if(route.view==='detail'&&!D.profiles.some(p=>p.id===route.plan))route={view:'results'};
     app.innerHTML=route.view==='question'?question():route.view==='results'?results():route.view==='detail'?detail():route.view==='catalog'?catalog():home();
     app.querySelectorAll('.art img').forEach(img=>{img.onload=()=>img.parentElement.classList.add('photo');img.onerror=()=>img.remove();});
@@ -113,7 +118,8 @@
   app.addEventListener('click',event=>{
     const el=event.target.closest('[data-action]');if(!el||pending)return;
     switch(el.dataset.action){
-      case 'catalog':move({view:'catalog',filter:'matched'});break;
+      case 'home':move({view:'home'});break;
+      case 'catalog':move({view:'catalog',filter:el.dataset.filter||(!L.complete(answers)?'all':'matched')});break;
       case 'filter':move({view:'catalog',filter:el.dataset.filter},true);break;
       case 'results':move({view:'results'});break;
       case 'start':move({view:'question',step:0});break;
