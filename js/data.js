@@ -76,11 +76,15 @@
     lake:[40,1130,255,137],trees:[39,1293,147,77],temple:[209,1293,146,77],omibeef:[384,1293,143,77],
     amanohashidate:[593,1118,286,147],seafood:[589,1294,142,77],lift:[755,1294,145,77],street:[932,1294,146,77]
   }};
-  const galleries={sanda:['outlet','steak','coffee','dinner'],awaji:['awaji','pancake','flowers','burger'],tokushima:['whirlpool','museum','cruise','ramen'],mie:['shrine','road','beef','eel'],shiga:['lake','trees','temple','omibeef'],kyoto:['amanohashidate','seafood','lift','amanohashidate']};
-  const spotImages={sanda:[['outlet'],['steak','coffee']],awaji:[['flowers'],['ramen'],['pancake'],['burger'],['awaji']],tokushima:[['museum'],['whirlpool'],['cruise'],['ramen','seafood']],mie:[['shrine'],['shrine'],['beef'],['road'],['eel']],shiga:[['lake'],['trees'],['temple'],['lake'],['omibeef']],kyoto:[['amanohashidate'],['amanohashidate'],['seafood']]};
+  const imageAssets={};
+  for(const [key,alt] of Object.entries({okage:'商家の通りで食べ歩きを楽しむイメージ','ise-udon':'太い麺とたまりだれの伊勢うどんのイメージ','onion-udon':'揚げた玉ねぎとうどんのイメージ',night:'湖と街の灯りを見下ろす夜景のイメージ',pines:'海辺の松林を歩くイメージ',outlet:'アウトレットで買い物を楽しむイメージ',garden:'温室の植物を眺めるイメージ',pancake:'パンケーキのイメージ',burger:'玉ねぎ入りバーガーのイメージ',forest:'森の中のレクリエーションのイメージ'}))imageAssets[key]={src:'images/generated/'+key+'.webp',alt:alt+'（AI生成）',width:1536,height:1024};
+  const profileImages={outlet:'outlet',garden:'garden',pancake:'pancake',udon:'onion-udon',night:'night',okage:'okage','okage-seafood':'okage','okage-udon':'ise-udon','okage-cafe':'okage',museum:'museum',boat:'whirlpool','city-cruise':'cruise',terrace:'lake',trees:'trees',temple:'temple',beef:'omibeef',bridge:'amanohashidate'};
+  profiles.forEach(p=>{p.imageKey=profileImages[p.id];});
+  const galleries={sanda:['outlet','steak','coffee','dinner'],awaji:['garden','pancake','onion-udon','burger'],tokushima:['whirlpool','museum','cruise','ramen'],mie:['okage','ise-udon','beef','eel'],shiga:['lake','trees','temple','omibeef'],kyoto:['amanohashidate','seafood','lift','pines']};
+  const spotImages={sanda:[['outlet'],['steak','coffee']],awaji:[['garden'],['onion-udon'],['pancake'],['burger'],['forest']],tokushima:[['museum'],['whirlpool'],['cruise'],['ramen','seafood']],mie:[['okage'],['shrine'],['beef'],['road'],['eel']],shiga:[['lake'],['trees'],['temple'],['night'],['omibeef']],kyoto:[['amanohashidate'],['pines'],['seafood']]};
   // Avoid attaching a ramen image to an udon dish: use a general food visual.
-  spotImages.awaji[1]=['awaji'];
-  spotImages.mie.push(['seafood'],['shrine'],['coffee']);
+
+  spotImages.mie.push(['seafood'],['ise-udon'],['coffee']);
   Object.keys(destinations).forEach(id=>{destinations[id].gallery=galleries[id];destinations[id].spotImages=spotImages[id];});
   const scoring={direct:12,partial:6,detailDirect:4,detailPartial:2,companionMax:4,environment:{indoor:{indoor:0,mixed:-2,outdoor:-4},outdoor:{indoor:-4,mixed:-1,outdoor:0}},areaOrder:Object.keys(destinations)};
   // Editorial relative burden, not measured journey times or live routing.
@@ -88,7 +92,7 @@
   travel.timePenalties={early:{near:0,middle:-2,far:-6}};
   const travelBands={outlet:'near',garden:'middle',pancake:'middle',udon:'middle',museum:'far',boat:'far',okage:'far',terrace:'middle',trees:'far',temple:'middle',night:'middle',beef:'middle',bridge:'far','okage-seafood':'far','okage-udon':'far','okage-cafe':'far','city-cruise':'far'};
   profiles.forEach(p=>{p.travelBand=travelBands[p.id];});
-  const data={interests,refinements,commonQuestions,destinations,profiles,scoring,referenceImages,travel};
+  const data={interests,refinements,commonQuestions,destinations,profiles,scoring,referenceImages,travel,imageAssets};
   root.DateData=data;
   if(typeof module!=='undefined'&&module.exports) module.exports=data;
 })(typeof globalThis!=='undefined'?globalThis:window);
