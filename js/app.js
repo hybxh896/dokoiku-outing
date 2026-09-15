@@ -85,7 +85,7 @@
     let content='';
     if(!matched.length){
       const message=answers.detail==='other'?'選択肢以外の好みに合う候補は、まだ用意できていません。ほかの候補を見たり、回答を見直したりしてみよう。':answers.start==='evening'&&answers.time==='early'?'夕方からの集合と夕方までの帰宅が重なっています。どちらかの時間を見直してみよう。':answers.main==='none'?'まだ目的が決まっていなくても大丈夫。候補を見ながら考えよう。':'今回は条件に合う候補が見つかりませんでした。回答を見直すか、ほかの候補を見ながら相談してみよう。';
-      content=`<div class="empty"><h2>候補を見ながら、考えよう。</h2><p>${message}</p></div>`;
+      content=`<div class="empty"><h2>候補を見ながら、考えよう。</h2><p>${message}</p></div><h2 class="section-label">すべてのおでかけ候補</h2>`+plans().map(p=>'<article class="spot catalog-card browse-card">'+art(p.area,'catalog-art',p.imageKey)+'<div class="catalog-copy"><h3>'+esc(p.name)+'</h3><p>'+esc(D.destinations[p.area].name)+'</p>'+button('スポットを見る','detail','data-profile="'+p.id+'"','outline')+'</div></article>').join('');
     }else{
       const top=matched.slice(0,3);
       content=top.map(card).join('');
