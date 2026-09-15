@@ -13,7 +13,7 @@
   const art=(area,extra='',imageKey=null)=>{
     const d=D.destinations[area];
     if(d.textOnly)return '<div class="plan-banner"><span>近場で、短めのおでかけ</span><p>うどんを食べて、<br>あとはその日の気分で。</p><small>ケーキは、余裕があれば。</small></div>';
-    if(d.gallery&&!d.image)return `<figure class="photo-gallery ${d.color} ${extra}"><div class="gallery-main">${picture(imageKey||d.gallery[0])}</div><div class="gallery-thumbs">${d.gallery.slice(1).map(picture).join('')}</div><figcaption>${d.name}のおでかけをイメージ · AI参考画像${d.imageNote?'<br>'+esc(d.imageNote):''}</figcaption></figure>`;
+    if(d.gallery&&!d.image)return `<figure class="photo-gallery ${d.color} ${extra}"><div class="gallery-main">${picture(imageKey||d.gallery[0])}</div><div class="gallery-thumbs">${d.gallery.slice(1).map(picture).join('')}</div><figcaption>写真はおでかけのイメージです。</figcaption></figure>`;
     return `<div class="art ${d.scene} ${extra}" aria-hidden="true"><span class="sun"></span><span class="cloud"></span><span class="water"></span><span class="art-label">A LITTLE DAY OUT</span>${d.image?`<img src="${esc(d.image)}" alt="">`:''}${extra==='hero-art'?'<span class="hero-sticker">気になる場所、<br>見つけよう。</span>':''}</div>`;
   };
   const prototype=()=>`<details class="notice"><summary>試作版について</summary><p>車でのおでかけを想定しています。車での移動負担を順位に反映しています。正確な所要時間の計算ではありません。歩く量の希望は注意書きに反映します。一部の店舗・組み合わせは確認中です。回答はこのページ内だけで使います。</p></details>`;
@@ -99,7 +99,7 @@
       const cards=ids.map(i=>{const [name,description,status]=d.spots[i];return '<article class="spot illustrated-spot"><div class="spot-images">'+(d.spotImages[i]||[]).map(picture).join('')+'</div><div class="spot-copy"><h3>'+esc(name)+'</h3><p>'+esc(description)+'</p>'+(status?'<span class="status">'+esc(status)+'</span>':'')+'</div></article>';}).join('');
       return key!=='main'&&answers.duration==='meal'?'<details class="notice"><summary>'+title+'（任意）</summary><p>'+note+'</p>'+cards+'</details>':'<section class="plan-section"><h2>'+title+'</h2><p class="hint">'+note+'</p>'+cards+'</section>';
     };
-    return '<section class="fade">'+button(route.from==='catalog'?'候補一覧に戻る':'診断結果に戻る','back','','outline')+'<h1>'+esc(p.name)+'</h1><p>'+esc(d.name)+'</p>'+art(p.area,'detail-art',p.imageKey)+'<p class="image-note">'+esc(d.imageNote||'AI参考画像です。実際の施設・料理の写真ではありません。')+'</p><p>主役だけでも大丈夫。全部回る必要はありません。</p>'+(d.duration?'<p>'+esc(d.duration)+'</p>':'')+groups.map(([key,title])=>section(key,title)).join('')+button(route.from==='catalog'?'候補一覧に戻る':'診断結果に戻る','back','','outline')+(route.from==='catalog'?button('診断結果に戻る','results','','outline'):button('ほかの候補も見る','catalog','','outline'))+'</section>';
+    return '<section class="fade">'+button(route.from==='catalog'?'候補一覧に戻る':'診断結果に戻る','back','','outline')+'<h1>'+esc(p.name)+'</h1><p>'+esc(d.name)+'</p>'+art(p.area,'detail-art',p.imageKey)+'<p>主役だけでも大丈夫。全部回る必要はありません。</p>'+(d.duration?'<p>'+esc(d.duration)+'</p>':'')+groups.map(([key,title])=>section(key,title)).join('')+button(route.from==='catalog'?'候補一覧に戻る':'診断結果に戻る','back','','outline')+(route.from==='catalog'?button('診断結果に戻る','results','','outline'):button('ほかの候補も見る','catalog','','outline'))+'</section>';
   }
   function render(scroll=0){
     if((route.view==='results'||route.view==='detail'||route.view==='catalog')&&!L.complete(answers))route={view:'home'};

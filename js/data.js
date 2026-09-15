@@ -97,7 +97,7 @@
 
   spotImages.mie.push(['seafood'],['ise-udon'],['coffee']);
   galleries.byakuan=['ise-udon','pancake'];spotImages.byakuan=[['ise-udon'],['pancake'],[],[],[]];
-  destinations.byakuan.imageNote='料理・スイーツのAI参考画像です。白庵の料理写真ではありません。パンケーキの訪問先も未定です。';
+
   Object.keys(destinations).forEach(id=>{destinations[id].gallery=galleries[id];destinations[id].spotImages=spotImages[id];});
   const scoring={direct:12,partial:6,detailDirect:4,detailPartial:2,companionMax:4,environment:{indoor:{indoor:0,mixed:-2,outdoor:-4},outdoor:{indoor:-4,mixed:-1,outdoor:0}},areaOrder:Object.keys(destinations)};
   // Editorial relative burden, not measured journey times or live routing.
