@@ -106,7 +106,15 @@
   const travelBands={byakuan:'near',outlet:'near',garden:'middle',pancake:'middle',udon:'middle',museum:'far',boat:'far',okage:'far',terrace:'middle',trees:'far',temple:'middle',night:'middle',beef:'middle',bridge:'far','okage-seafood':'far','okage-udon':'far','okage-cafe':'far','city-cruise':'far'};
   profiles.forEach(p=>{p.travelBand=travelBands[p.id];});
   const schedulePolicy={shortDurations:['meal','tea'],shortProfiles:['byakuan'],lateStarts:['afternoon','evening'],eveningProfiles:['byakuan','night','outlet']};
-  const data={schedulePolicy,interests,refinements,commonQuestions,scheduleQuestions,destinations,profiles,scoring,referenceImages,travel,imageAssets};
+  const planDetails={
+    outlet:{main:[0],near:[1]},garden:{main:[0]},pancake:{main:[2]},udon:{main:[1]},
+    museum:{main:[0],near:[1]},boat:{main:[1],near:[0]},'city-cruise':{main:[2]},
+    okage:{main:[0],near:[5,6,7],extra:[1],drive:[2,3,4]},
+    terrace:{main:[0]},trees:{main:[1]},temple:{main:[2]},night:{main:[3]},beef:{main:[4]},
+    bridge:{main:[0,1],extra:[2]},byakuan:{main:[0],extra:[1,2],drive:[3],ending:[4]}
+  };
+  const planGroup=id=>id.startsWith('okage')?'okage':id;
+  const data={planDetails,planGroup,schedulePolicy,interests,refinements,commonQuestions,scheduleQuestions,destinations,profiles,scoring,referenceImages,travel,imageAssets};
   root.DateData=data;
   if(typeof module!=='undefined'&&module.exports) module.exports=data;
 })(typeof globalThis!=='undefined'?globalThis:window);

@@ -18,12 +18,12 @@
   }
   function complete(a){return a.detail!=='neither'&&questions(a).every(q=>q.options.some(o=>o.id===a[q.id]));}
   function label(a,id){const q=questions(a).find(q=>q.id===id);return q?.options.find(o=>o.id===a[id])?.label||'';}
-  function rank(input){
+  function rank(input,all=false){
     const a={...input};
     if(a.extras!=='yes')for(const key of ['walking','environment','time','companion'])delete a[key];
     if(a.duration==='meal')delete a.companion;
     const specific=a.detail&&!['any','unknown','neither'].includes(a.detail);
-    const results=D.profiles.filter(p=>p.id!=='night'||(a.main==='nature'&&a.detail==='night'&&a.time!=='early')).map(p=>{
+    const results=D.profiles.filter(p=>all||p.id!=='night'||(a.main==='nature'&&a.detail==='night'&&a.time!=='early')).map(p=>{
       let detail=0;
       if(specific) detail=a.detail==='both'?Math.max(p.detail.town||0,p.detail.temple||0):(p.detail[a.detail]||0);
       const main=specific?(detail>=D.scoring.detailDirect?D.scoring.direct:detail>0?D.scoring.partial:0):(p.main[a.main]||0);
@@ -37,10 +37,11 @@
       // Conservative editorial availability, not opening-hours or route calculations.
       const short=D.schedulePolicy.shortDurations.includes(a.duration);
       const timeConflict=a.start==='evening'&&a.time==='early';
-      const scheduleFit=!timeConflict&&(!short||D.schedulePolicy.shortProfiles.includes(p.id))&&(a.duration!=='half'||p.travelBand!=='far')&&(!D.schedulePolicy.lateStarts.includes(a.start)||p.travelBand!=='far')&&(a.start!=='evening'||D.schedulePolicy.eveningProfiles.includes(p.id));
+      const scheduleFit=(p.id!=='night'||(a.main==='nature'&&a.detail==='night'&&a.time!=='early'))&&!timeConflict&&(!short||D.schedulePolicy.shortProfiles.includes(p.id))&&(a.duration!=='half'||p.travelBand!=='far')&&(!D.schedulePolicy.lateStarts.includes(a.start)||p.travelBand!=='far')&&(a.start!=='evening'||D.schedulePolicy.eveningProfiles.includes(p.id));
       return {...p,scheduleFit,mainScore:main,detailScore:detail,companionScore:companion,travelScore:travel,timeScore:time,mobilityScore:mobility,score:main+detail+env+companion+mobility,matched:main>0&&scheduleFit};
     });
     const compare=(x,y)=>Number(y.matched)-Number(x.matched)||y.score-x.score||y.mobilityScore-x.mobilityScore||y.mainScore-x.mainScore||x.id.localeCompare(y.id,'en');
+    if(all)return results.sort(compare);
     return D.scoring.areaOrder.map(area=>results.filter(p=>p.area===area).sort(compare)[0]).sort((x,y)=>y.score-x.score||y.mobilityScore-x.mobilityScore||y.mainScore-x.mainScore||D.scoring.areaOrder.indexOf(x.area)-D.scoring.areaOrder.indexOf(y.area));
   }
   root.DateLogic={questions,answer,complete,label,rank};
