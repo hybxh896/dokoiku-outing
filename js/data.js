@@ -1,120 +1,194 @@
-/* 質問・候補・配点はこのファイルで編集。外部通信・永続保存なし。 */
-(function (root) {
+/* 一日のおでかけ：質問・候補・根拠をここで管理。外部通信・永続保存なし。 */
+(function(root){
   'use strict';
-  const option = (id, label, note = '') => ({id, label, note});
-  const interests = [
-    option('food','おいしいごはん','おでかけ先で、おいしいものを'),
-    option('cafe','カフェ・スイーツ','甘いものと、ひと休み'),
-    option('nature','景色・自然','海や山、緑に会いに'),
-    option('shopping','洋服や雑貨の買い物','気になるお店をのぞきたい'),
-    option('art','美術館でアート','作品をゆっくり楽しみたい'),
-    option('boat','船に乗る','いつもと違う景色を見たい'),
-    option('walk','街並み散策・お参り','歩きながら、寄り道も'),
-    option('none','まだ決めていない','候補を見て考えたい')
+  const option=(id,label,note='')=>({id,label,note});
+  const questions=[
+    {id:'food',eyebrow:'まずは、食べたいもの',title:'何を食べたい気分？',hint:'今回は一日のおでかけ。食事も遊びも楽しもう。',options:[
+      option('noodles','うどん'),option('meat','焼肉・牛肉料理','焼肉や近江牛を楽しみたい'),option('seafood','海鮮丼・魚料理'),option('misokatsu','味噌カツ'),option('hitsumabushi','うなぎ・ひつまぶし'),option('yakisoba','ひるぜん焼そば'),option('sweets','フルーツ・スイーツ'),option('unknown','候補を見て決めたい')]},
+    {id:'activity',eyebrow:'食事と一緒に楽しむこと',title:'ごはんのほかに何を楽しみたい？',hint:'食事とは別に、今日の楽しみをひとつ。',options:[
+      option('jellyfish','クラゲを眺める'),option('dolphin','イルカを楽しむ','泳ぐ姿や、施設ごとの体験を'),option('nature','景色・自然'),option('walk','街歩き・お参り','お城や庭園の散策も'),option('shopping','買い物'),option('art','美術館'),option('boat','船に乗る'),option('cafe','カフェでゆっくり'),option('unknown','候補を見て決めたい')]},
+    {id:'priority',eyebrow:'今回の優先順位',title:'今回は、どちらを優先して選びたい？',hint:'どちらの候補も残して、表示する順番を変えます。',options:[option('food','ごはんを優先したい'),option('activity','やりたいことを優先したい'),option('balanced','どちらも同じくらい')]},
+    {id:'start',eyebrow:'出かける時間',title:'何時ごろから会えそう？',hint:'大阪駅周辺から車で出かける想定です。',options:[
+      option('morning','午前中'),option('afternoon','昼過ぎ'),option('evening','夕方'),option('unknown','まだ決めていない')]},
+    {id:'time',eyebrow:'帰る時間',title:'何時ごろまでに帰りたい？',hint:'往復の移動と、現地で過ごす時間を考えます。',options:[
+      option('early','夕方まで','17時ごろ'),option('earlynight','夜は早めに','20時ごろ'),option('late','夜遅くても大丈夫','23時ごろまで'),option('unknown','まだ決めていない')]},
+    {id:'travel',eyebrow:'最後に、ドライブの気分',title:'車での移動はどれくらいがいい？',hint:'行きたい場所と、移動の負担のバランスを。',options:[
+      option('short','近場がいい'),option('middle','少し遠出したい'),option('long','遠くても大丈夫')]}
   ];
-  const refinements={
-    food:{title:'何を食べたい気分？',options:[option('noodles','うどん'),option('beef','肉料理','候補は牛肉料理が中心です'),option('seafood','海鮮'),option('other','ほかのものがいい','ほかの候補を見ながら考えたい'),option('any','特に決めていない')]},
-    cafe:{title:'どんなお茶の時間がいい？',options:[option('sweets','甘いものを楽しみたい'),option('view','景色を見ながら過ごしたい'),option('any','どちらでもいい')]},
-    nature:{title:'どんな景色が気になる？',options:[option('sea','海'),option('lake','湖や山'),option('green','植物・緑'),option('night','夜景'),option('any','特に決めていない')]},
-    boat:{title:'どちらの体験が気になる？',options:[option('whirlpool','渦潮を見たい'),option('city','街の水辺を巡りたい'),option('any','どちらでもいい')]},
-    walk:{title:'どんな街歩きが気になる？',options:[option('town','街並み・食べ歩き'),option('temple','お寺や神社'),option('both','両方気になる','どちらか一方の候補でもOK'),option('any','特に決めていない')]}
+  const area=(name,theme,scene,color,spots,icon='◇')=>({name,theme,scene,color,spots,icon,image:null,gallery:[],spotImages:spots.map(()=>[])});
+  const destinations={
+    byakuan:area('大阪・神崎川','白庵でうどん、寄り道はその日の気分で。','town','sand',[
+      ['白庵','好きなうどんを楽しむ食事の候補。一日の予定に組み込むなら、ほかの行き先も選ぼう。'],
+      ['ケーキ・スイーツ','豊中・少路〜緑丘、箕面・牧落〜桜井、小野原方面で寄り道を考える案。','店舗・移動未定']
+    ]),
+    sanda:area('三田','お店を巡って、ひと休み。','town','sand',[
+      ['神戸三田プレミアム・アウトレット','気になるお店を選びながら買い物を楽しもう。'],
+      ['ランチ・カフェ','買い物と一緒に楽しむ食事は、これから選びます。','店舗未定']
+    ]),
+    tokushima:area('徳島','アートや船を主役に、日帰りの遠出。','sea','mint',[
+      ['大塚国際美術館','見たい作品を選んで鑑賞。館内を歩く時間も見込もう。'],
+      ['うずしお汽船','渦潮を見る船の候補。見頃の潮時と運航状況を確認して。'],
+      ['ひょうたん島クルーズ','徳島市中心部の水辺を巡る船。鳴門の観潮船とは別の場所です。'],
+      ['徳島ラーメン・海鮮・鳥料理','食べたい料理に合わせてお店を選ぶ案。','店舗・組み合わせ未定']
+    ]),
+    mie:area('三重・伊勢〜松阪','横丁散策と、おいしい寄り道。','town','peach',[
+      ['おかげ横丁','街並みを歩いて、気になる食べ物を見つけよう。'],
+      ['伊勢神宮','お参りと参道の散策。横丁と組み合わせるなら歩く時間も見込もう。'],
+      ['一升びん 本店','松阪で焼肉。伊勢の横丁とは別の食事候補です。'],
+      ['伊勢志摩スカイライン','景色を楽しむドライブの候補。道路の営業状況を確認して。'],
+      ['松阪市内でうなぎ','うなぎのお店は松阪市内で選ぼう。食後は車で伊勢へ。'],
+      ['海老丸','おかげ横丁で海鮮を楽しむ。'],
+      ['ふくすけ','おかげ横丁で伊勢うどん。'],
+      ['五十鈴川カフェ','横丁散策の合間にコーヒーやスイーツ。']
+    ]),
+    shiga:area('滋賀','湖や山の景色、近江牛を楽しみに。','sea','mint',[
+      ['びわ湖テラス','天候と営業状況を確認して、湖の景色を楽しもう。'],
+      ['メタセコイア並木','緑や季節の景色を楽しむ散策。滋賀のほかの候補とは距離があります。'],
+      ['比叡山のお参り','参拝する区域や歩く範囲は、これから選ぼう。'],
+      ['夢見が丘の夜景','夜に訪れる候補。道路や展望場所の営業条件を確認して。'],
+      ['農家レストランだいきち 大津堅田店','近江牛を楽しむ食事。景色スポットとの周遊は別途確認。']
+    ]),
+    kyoto:area('京都・天橋立','海を見晴らして、松並木を歩く。','sea','blue',[
+      ['天橋立ビューランド','展望を楽しむ候補。天候や営業状況を確認して。'],
+      ['天橋立の松並木','全部を渡らず、短い散策でも。'],
+      ['海鮮グルメ','海鮮のお店はこれから選びます。','店舗未定']
+    ]),
+    nagoya:area('名古屋','クラゲを眺めて、名古屋めしも。','sea','blue',[
+      ['名古屋港水族館','一押しはクラゲ。「くらげなごりうむ」で、ゆっくり眺める時間を。'],
+      ['名古屋城','お城と本丸御殿を楽しむ散策。観覧できる範囲は公式情報で確認して。'],
+      ['矢場とん 名古屋城金シャチ横丁店','味噌カツの店舗候補。名古屋城の正門側、義直ゾーン。'],
+      ['ひつまぶし名古屋備長 金シャチ横丁店','ひつまぶしの店舗候補。名古屋城の正門側、義直ゾーン。']
+    ],'◌'),
+    mieNorth:area('三重北部・桑名〜四日市','花の景色と、海鮮丼を楽しみに。','sea','peach',[
+      ['なばなの里','花や庭園の景色。イルミネーションは開催日・点灯時間の確認が必要です。'],
+      ['まぐろレストラン 四日市本店','海鮮丼を食べる候補。名古屋市内ではなく四日市にあります。']
+    ],'✿'),
+    kagawa:area('香川','うどん、水族館、イルカ、海辺。','sea','blue',[
+      ['四国水族館','宇多津の水族館。海豚プールでイルカの泳ぐ姿も楽しめます。開催プログラムは当日確認して。'],
+      ['日本ドルフィンセンター','さぬき市でイルカを楽しむ候補。ふれあいはプログラムの空きと開催条件を確認して。'],
+      ['父母ヶ浜','三豊の海辺の景色。水鏡のような写真は潮位・風・天候によって変わります。'],
+      ['本格手打うどん おか泉','香川のうどんの店舗候補。宇多津にあり、四国水族館と合わせて検討できます。']
+    ],'≈'),
+    okayama:area('岡山','街並みや庭園と、ご当地の味。','town','peach',[
+      ['倉敷美観地区','街並みや倉敷川沿いを散策。'],
+      ['岡山後楽園','庭園をゆっくり歩いて景色を楽しもう。'],
+      ['やす坊のひるぜん焼そば','岡山市東区・西大寺の食事候補。ひるぜん焼そばを楽しみに。'],
+      ['くらしき桃子 倉敷本店','美観地区のフルーツ・スイーツの店舗候補。パフェの果物は季節によって変わります。']
+    ],'♧')
   };
-  Object.values(refinements).forEach(q=>{
-    if(!q.options.some(o=>o.id==='other'))q.options.push(option('other','ほかのものがいい','ほかの候補を見ながら考えたい'));
-    q.options.push(option('neither','楽しみ方を選び直す'));
-  });
-  const scheduleQuestions=[
-    {id:'duration',eyebrow:'まずは、過ごす時間から',title:'今回はどれくらい一緒に過ごしたい？',hint:'短く会う日も、ゆっくり出かける日も。',options:[option('meal','ごはんだけ'),option('tea','ごはんとお茶くらい'),option('half','半日くらい'),option('day','一日ゆっくり'),option('unknown','まだ決めていない')]},
-    {id:'start',eyebrow:'集合の時間',title:'何時ごろから会えそう？',hint:'だいたいの時間で大丈夫。',options:[option('morning','朝から'),option('noon','お昼ごろ'),option('afternoon','午後から'),option('evening','夕方から'),option('unknown','まだ決めていない')]}
-  ];
-  const commonQuestions=[
-    {id:'travel',eyebrow:'車での移動',title:'車での移動はどれくらいがいい？',hint:'大阪駅周辺から出かける想定です。',options:[option('short','なるべく短め'),option('middle','ほどよくドライブ'),option('long','長めでも大丈夫'),option('unknown','まだ決めていない')]},
-    {id:'extras',eyebrow:'ここまででも診断できます',title:'もう少し好みを伝える？',hint:'歩く量や帰りたい時間など、追加の希望を選べます。',options:[option('skip','このまま結果を見る'),option('yes','細かな希望も伝える')]},
-    {id:'walking',eyebrow:'もう少し、好みを教えて',title:'歩く量の希望は？',hint:'歩く量が気になる場合は、結果の説明も参考にしてね。',options:[option('low','座って過ごす時間を多めに'),option('medium','休憩しながら少し歩きたい'),option('high','散策も楽しみたい'),option('unknown','特に希望なし')]},
-    {id:'environment',eyebrow:'もう少し、好みを教えて',title:'過ごす場所の希望は？',options:[option('indoor','屋内中心'),option('outdoor','屋外も楽しみたい'),option('any','どちらでもいい')]},
-    {id:'time',eyebrow:'もう少し、好みを教えて',title:'帰りたい時間はある？',hint:'移動時間もあるので、だいたいの希望を教えてね。',options:[option('early','夕方までに帰りたい'),option('earlynight','夜は早めに帰りたい'),option('unknown','特に決めていない')]},
-    {id:'companion',eyebrow:'余裕があるなら',title:'余裕があれば、ほかに何をしたい？',hint:'無理のない範囲で、寄り道も。',options:[option('cafe','お茶・スイーツ'),option('shopping','少し買い物'),option('walk','少し散歩'),option('none','追加せずゆっくり'),option('unknown','当日決めたい')]}
-  ];
-  const destinations = {
-    sanda:{name:'三田',theme:'お店をのぞいて、ひと休み。',icon:'♧',scene:'town',color:'sand',image:null,tags:['買い物','カフェ'],spots:[['神戸三田プレミアム・アウトレット','今回の主役。気になるお店をゆっくり巡ろう。'],['ランチ・カフェ','買い物の合間にひと休み。お店はこれから選びます。','候補を整理中']]},
-    awaji:{name:'淡路島',theme:'植物とおいしいごはんを楽しもう。',icon:'☀',scene:'island',color:'blue',image:null,tags:['植物','スイーツ'],spots:[['あわじグリーン館','温室の植物を眺めながら、緑の中を散策。'],['いづも庵','名物の玉ねぎを使ったうどんが気になる。'],['幸せのパンケーキ','スイーツを楽しむひととき。席や景観は確認中。'],['淡路島バーガー','ドライブの途中にバーガーを楽しむ案。お店はこれから。','店舗未定'],['ニジゲンノモリ','どんな遊びをするかは、これから相談しよう。','参考候補']]},
-    tokushima:{name:'徳島',theme:'アートと、海の迫力。',icon:'◈',scene:'sea',color:'mint',image:null,tags:['美術館','クルーズ'],spots:[['大塚国際美術館','世界の名画を陶板で再現した美術館。鑑賞範囲を選んで楽しもう。'],['うずしお汽船','美術館近くから船に乗って渦潮を見に。見頃の時間と運航状況を確認しよう。','候補として検討中'],['ひょうたん島クルーズ','街の水辺を巡る別の楽しみ方。運航情報を確認中。','確認中'],['徳島ラーメン・海鮮・鳥料理','ご当地のごはんも気になる。具体的なお店は未定。','店舗未定']]},
-    mie:{name:'三重',theme:'横丁を歩いて、おいしい寄り道。',icon:'⌂',scene:'town',color:'peach',image:null,tags:['おかげ横丁','食べ歩き'],spots:[['おかげ横丁','今回の主役。街並みを眺めながら食べ歩き。'],['伊勢神宮','お参りも気になるなら。参道を歩く時間を見込んで。'],['一升びん','松阪で焼肉を楽しむ追加候補。支店と移動は確認中。','確認中'],['伊勢志摩スカイライン','景色を楽しむ追加候補。横丁との移動を確認中。','確認中'],['うなぎグルメ','おいしいごはんの候補として。お店は未定。','店舗未定']]},
-    shiga:{name:'滋賀',theme:'湖と山の景色、ごほうびのごはん。',icon:'△',scene:'lake',color:'mint',image:null,tags:['湖・山','近江牛'],spots:[['びわ湖テラス','湖と山の広がりを眺める展望スポット。天候・営業状況を確認して。'],['メタセコイア並木','季節ごとに表情が変わる並木道。ほかの候補とは距離があります。'],['比叡山のお参り','山のお寺へ。参拝する区域はこれから選びます。'],['夢見が丘の夜景','比叡山の夜景の候補として検討中。夜まで過ごせる日に。','候補として検討中'],['農家レストランだいきち 大津堅田店','近江牛を楽しむ食事の候補。景色スポットとの移動は確認中。']]},
-    kyoto:{name:'天橋立',theme:'海を見晴らして、松並木を歩く。',icon:'≈',scene:'sea',color:'blue',image:null,tags:['海の展望','散策'],spots:[['天橋立ビューランド','高いところから、海と松並木の景色を眺めよう。'],['天橋立の松並木','景色を見ながら散策。全部を渡らず、短く歩く楽しみ方も。'],['海鮮グルメ','海鮮のお店も候補に。具体的なお店はこれから。','店舗未定']]}
-  };
-  destinations.byakuan={name:'大阪市淀川区｜白庵（神崎川駅近く）',theme:'白庵でうどん、気が向いたらケーキ',textOnly:false,planNote:'好きなうどんを食べることがメインの、車で出かける短めのプラン。',duration:'食事とお茶で2〜3時間程度が目安。移動・待ち時間は別です。',tags:['うどん','短め','ケーキは気分で'],spots:[['神崎川の白庵でうどん','食事だけで解散しても予定どおり。好きなうどんを楽しもう。'],['余裕があれば、ケーキやスイーツ','お店は事前に決め込まず、その日の気分や元気に合わせて。','気が向いたら'],['近めに寄るなら：豊中・少路〜緑丘','ケーキやスイーツのお店を当日の気分で選ぶ候補エリア。','店舗未定'],['ドライブも楽しむなら：箕面・牧落〜桜井、小野原方面','車での寄り道も楽しみたい日に。具体的なお店と移動時間はこれから。','店舗未定'],['お茶を楽しんだら解散','カフェを入れても、食事とお茶で全体2〜3時間程度。移動・待ち時間は別に考えよう。']]};
-  const p=(id,area,name,main,detail,environment,walkingNote,companions={})=>({id,area,name,main,detail,environment,walkingNote,companions});
-  const profiles=[
-    p('outlet','sanda','アウトレットで買い物',{shopping:12},{},'mixed','お店を巡るため歩きます。見るお店を絞ると過ごしやすそう。'),
-    p('garden','awaji','あわじグリーン館で植物を眺める',{nature:12},{green:4},'indoor','温室内を散策します。駐車場から歩く距離は確認中。'),
-    p('pancake','awaji','パンケーキを楽しむ',{food:6,cafe:12},{sweets:4},null,'座って楽しむ食事ですが、待ち時間や駐車場から歩く道のりは確認中。'),
-    p('udon','awaji','いづも庵でごはん',{food:12},{noodles:4},null,'駐車場からお店までの道のりは確認中。'),
-    p('museum','tokushima','大塚国際美術館でアート',{art:12},{},'indoor','全体の鑑賞ルートは約4km。歩く量を抑えるなら鑑賞範囲を絞って。',{boat:{points:4,reason:'観潮船の乗り場は美術館正面口から徒歩約5分。潮時と滞在時間は確認して。'}}),
-    p('boat','tokushima','うずしお汽船で渦潮を見る',{boat:12,nature:6},{whirlpool:4,sea:2},null,'乗り降りのしやすさや、乗り場まで歩く距離は確認中。',{art:{points:4,reason:'近くに大塚国際美術館。両方楽しむ場合は鑑賞時間と船の時刻を確認して。'}}),
-    p('okage','mie','おかげ横丁で食べ歩き',{food:12,cafe:6,walk:12},{town:4},'mixed','街並みを歩いて楽しむ場所です。駐車場からの移動もあります。'),
-    p('terrace','shiga','びわ湖テラスで景色を楽しむ',{nature:12},{lake:4},'outdoor','駐車場から山麓駅への移動や、展望エリアでの歩行があります。'),
-    p('trees','shiga','メタセコイア並木を散策',{nature:12},{green:4},'outdoor','歩く範囲は調整できます。駐車場から歩く道のりは確認中。'),
-    p('temple','shiga','比叡山でお参り',{walk:12,nature:6},{temple:4,lake:4},null,'参拝する区域によって歩く量が変わります。区域は未定。'),
-    p('night','shiga','夢見が丘で夜景を眺める',{nature:12},{night:4},'outdoor','駐車場から展望場所までの道のりを確認中。夜間の営業条件にも注意。'),
-    p('beef','shiga','だいきちで近江牛を味わう',{food:12},{beef:4},null,'食事中心の候補です。駐車場から歩く道のりは確認中。'),
-    p('bridge','kyoto','天橋立の展望と松並木散策',{nature:12,walk:6},{sea:4,green:2,town:2},'outdoor','松並木の全区間横断は片道約50分。短い散策でも楽しむ案です。')
-  ];
-  // These are additional choices within the user's existing areas, not a route timetable.
-  destinations.mie.spots[2]=['一升びん 本店','松阪で焼肉を食べるなら。伊勢からの移動もあるので、時間に余裕のある日に。','追加候補'];
-  destinations.mie.spots.push(['海老丸','おかげ横丁で、海鮮丼など伊勢志摩の魚介を楽しむ。'],['ふくすけ','おかげ横丁で伊勢うどん。街並み散策と一緒に。'],['五十鈴川カフェ','五十鈴川を眺めながら、コーヒーとスイーツでひと休み。']);
-  destinations.tokushima.spots[2]=['ひょうたん島クルーズ','徳島市中心部の水辺を約30分で周遊。出航時刻と当日の運航状況を確認して。'];
-  profiles.push(
-    p('okage-seafood','mie','おかげ横丁と海老丸の海鮮',{food:12,walk:12},{seafood:4,town:4},'mixed','横丁を散策して海老丸へ。街歩きと食事を組み合わせる候補です。'),
-    p('okage-udon','mie','おかげ横丁とふくすけの伊勢うどん',{food:12,walk:12},{noodles:4,town:4},'mixed','横丁の散策と店までの徒歩移動があります。'),
-    p('okage-cafe','mie','おかげ横丁と五十鈴川カフェ',{cafe:12,walk:12,nature:6},{view:4,sweets:4,town:4},'mixed','街並みを歩き、川沿いのカフェでひと休みする候補です。'),
-    p('city-cruise','tokushima','ひょうたん島クルーズで街の水辺を巡る',{boat:12,nature:6},{city:4},null,'乗り場は徳島市中心部。鳴門の観潮船とは別の場所です。乗り降りのしやすさは確認中。')
-  );
-  profiles.push(p('byakuan','byakuan','近場でうどん、気が向いたらスイーツ',{food:12},{noodles:4},'indoor','食事が主役。待ち時間や駐車場からの移動は当日確認して。'));
-  const profileTags={byakuan:['うどん','短め','ケーキは気分で'],outlet:['買い物','お店巡り'],garden:['植物','温室'],pancake:['スイーツ'],udon:['うどん'],museum:['アート','屋内'],boat:['観潮船'],okage:['食べ歩き','街並み'],terrace:['湖の展望'],trees:['並木','緑'],temple:['参拝'],night:['夜景'],beef:['近江牛'],bridge:['海の展望','松並木']};
-  profiles.forEach(p=>{p.tags=profileTags[p.id]||[];});
-  profiles.find(p=>p.id==='okage-seafood').tags=['海鮮','横丁散策'];
-  profiles.find(p=>p.id==='okage-udon').tags=['伊勢うどん','横丁散策'];
-  profiles.find(p=>p.id==='okage-cafe').tags=['川の景色','カフェ'];
-  profiles.find(p=>p.id==='city-cruise').tags=['街の水辺','クルーズ'];
-  // Reference image displayed through CSS windows; original pixels are preserved.
-  // Each rectangle is [x,y,width,height] in the 1122 × 1402 supplied image.
+  const profiles=[],planDetails={};
+  function add(id,areaId,name,food,activity,main,settings={}){
+    const p={id,area:areaId,name,food,activity,foodStatus:'verified',travelBand:'far',daylight:true,night:false,imageKey:null,notes:[],sources:[],...settings};
+    profiles.push(p);
+    planDetails[id]={main,...(settings.near?{near:settings.near}:{}),...(settings.extra?{extra:settings.extra}:{})};
+  }
+  const source=(label,url)=>({label,url});
+  const nagoyaSource=source('名古屋港水族館・館内案内','https://www.nagoyaaqua.jp/floormap/');
+  const castleSource=source('名古屋城・観覧案内','https://www.nagoyajo.city.nagoya.jp/guide/nagoyajo/');
+  const foodStreetSource=source('金シャチ横丁・店舗案内','https://kinshachi-yokocho.com/');
+  const shikokuSource=source('四国水族館・アクセス','https://shikoku-aquarium.jp/access/');
+  const okasenSource=source('おか泉・店舗アクセス','https://www.okasen.com/honten/info/access/');
+  const momokoSource=source('くらしき桃子・店舗案内','https://kurashikimomoko.jp/shop/');
+  const beachSource=source('父母ヶ浜・観光案内','https://www.mitoyo-kanko.com/chichibugahama/');
+  add('byakuan','byakuan','白庵でうどんを楽しむ',{noodles:10},{},[0],{travelBand:'near',daylight:false,imageKey:'ise-udon',extra:[1],notes:['食事中心の候補です。一日のおでかけにするなら、ほかの行き先も選ぼう。','昼・夜の営業と麺切れ、待ち時間を確認して。']});
+  add('outlet','sanda','アウトレットで買い物',{},{shopping:10},[0],{travelBand:'near',daylight:false,imageKey:'outlet',notes:['食事のお店はまだ選んでいません。']});
+  add('museum','tokushima','大塚国際美術館でアート',{},{art:10},[0],{imageKey:'museum',near:[1],notes:['観潮船も楽しむ場合は、鑑賞時間と船の時刻を確認して。']});
+  add('boat','tokushima','うずしお汽船で渦潮を見る',{},{boat:10,nature:5},[1],{imageKey:'whirlpool',near:[0],notes:['渦潮の見頃と出航時間は日によって変わります。']});
+  add('city-cruise','tokushima','ひょうたん島クルーズ',{},{boat:10},[2],{imageKey:'cruise'});
+  add('tokushima-food','tokushima','徳島のご当地ごはんを探す',{seafood:10},{},[3],{foodStatus:'pending',notes:['お店とメニューが未定のため、食事への一致はまだ評価していません。']});
+  add('okage','mie','おかげ横丁で街歩き',{},{walk:10},[0],{imageKey:'okage',near:[5,6,7],extra:[1]});
+  add('okage-seafood','mie','おかげ横丁と海老丸の海鮮',{seafood:10},{walk:10},[0,5],{imageKey:'okage',near:[6,7],extra:[1]});
+  add('okage-udon','mie','おかげ横丁とふくすけの伊勢うどん',{noodles:10},{walk:10},[0,6],{imageKey:'ise-udon',near:[5,7],extra:[1]});
+  add('okage-cafe','mie','おかげ横丁と五十鈴川カフェ',{sweets:5},{walk:10,cafe:10},[0,7],{imageKey:'coffee',notes:['スイーツは注文内容に合わせて選ぼう。']});
+  add('ise-shrine','mie','伊勢神宮でお参り',{},{walk:10},[1],{imageKey:'shrine',extra:[0]});
+  add('isshobin','mie','一升びん 本店で焼肉',{meat:10},{},[2],{daylight:false,imageKey:'beef',notes:['松阪の食事候補です。伊勢への寄り道は移動時間を確認してから。']});
+  add('ise-skyline','mie','伊勢志摩スカイラインの景色',{},{nature:10},[3],{notes:['営業時間・通行条件を確認してから出かけよう。']});
+  add('ise-eel','mie','松阪でうなぎを食べて、伊勢を散策',{hitsumabushi:10},{walk:10},[4,0],{foodStatus:'planned',extra:[1],notes:['松阪市内でうなぎを食べて、車で伊勢のおかげ横丁へ。お店の営業時間と移動の時間に合わせて楽しもう。','伊勢神宮は時間に余裕があれば。ひつまぶしの提供は選ぶお店によって異なります。']});
+  add('terrace','shiga','びわ湖テラスの景色',{},{nature:10},[0],{travelBand:'middle',imageKey:'lake'});
+  add('trees','shiga','メタセコイア並木を散策',{},{nature:10,walk:5},[1],{imageKey:'trees',notes:['街並みではなく、並木道の散策として部分的に合う候補です。']});
+  add('temple','shiga','比叡山でお参り',{},{walk:10},[2],{travelBand:'middle',imageKey:'temple'});
+  add('night','shiga','夢見が丘で夜景を眺める',{},{nature:10},[3],{travelBand:'middle',daylight:false,night:true,imageKey:'night',notes:['夜に立ち寄れるか、道路・施設の営業時間を確認して。']});
+  add('beef','shiga','だいきちで近江牛を味わう',{meat:10},{},[4],{travelBand:'middle',daylight:false,imageKey:'omibeef'});
+  add('bridge','kyoto','天橋立の展望と松並木散策',{},{nature:10,walk:5},[0,1],{imageKey:'amanohashidate',notes:['食事の海鮮店は未定です。街並みではなく松並木の散策として部分的に合う候補です。']});
+  add('amanohashidate-food','kyoto','天橋立で海鮮を楽しむ',{seafood:10},{},[2],{foodStatus:'pending',notes:['店舗未定。展望・散策と同時に楽しめるかは、店舗が決まってから確認します。']});
+  add('nagoya-aquarium','nagoya','名古屋港水族館へ（クラゲが一押し）',{},{jellyfish:10,dolphin:10},[0],{sources:[nagoyaSource,source('名古屋港水族館・イルカパフォーマンス','https://nagoyaaqua.jp/event/')],notes:['一押しは「くらげなごりうむ」。イルカも見られます。パフォーマンスは当日の開催状況を確認して。','味噌カツ・ひつまぶしのお店と組み合わせる場合は、移動と食事の時間を別に確認して。']});
+  add('nagoya-castle','nagoya','名古屋城を散策する',{},{walk:10},[1],{near:[2,3],sources:[castleSource,foodStreetSource]});
+  add('nagoya-misokatsu','nagoya','名古屋城と金シャチ横丁の味噌カツ',{misokatsu:10},{walk:10},[1,2],{sources:[castleSource,foodStreetSource],notes:['矢場とん 名古屋城金シャチ横丁店を店舗候補にしています。営業日と待ち時間を確認して。']});
+  add('nagoya-hitsumabushi','nagoya','名古屋城と金シャチ横丁のひつまぶし',{hitsumabushi:10},{walk:10},[1,3],{sources:[castleSource,foodStreetSource],notes:['ひつまぶし名古屋備長 金シャチ横丁店を店舗候補にしています。営業日と待ち時間を確認して。']});
+  add('nabana','mieNorth','なばなの里で花や庭園を楽しむ',{},{nature:10},[0],{sources:[source('なばなの里・季節のイベント','https://www.nagashima-onsen.co.jp/nabana/event/index.html')],notes:['イルミネーションも見たい場合は、開催日・点灯時間・帰宅時間を別に確認して。昼の庭園への評価です。']});
+  add('maguro','mieNorth','まぐろレストランで海鮮丼',{seafood:10},{},[1],{daylight:false,sources:[source('まぐろレストラン・四日市本店','https://maguro-restaurant.co.jp/restaurant/yokkaichi/')],notes:['食事中心の候補です。なばなの里や名古屋港水族館との周遊は未評価です。']});
+  add('shikoku-aquarium','kagawa','四国水族館と宇多津のうどん',{noodles:10},{dolphin:10},[0,3],{sources:[shikokuSource,okasenSource,source('四国水族館・イルカ','https://shikoku-aquarium.jp/information/dolphinlive.html')],notes:['うどんは宇多津のおか泉を店舗候補に。両施設の所在地を確認した組み合わせ案です。道路状況と待ち時間は当日確認して。']});
+  add('dolphin','kagawa','日本ドルフィンセンターでイルカを楽しむ',{},{dolphin:10},[1],{sources:[source('日本ドルフィンセンター・ふれあいプログラム','https://www.j-dc2.net/activity/')],notes:['見学とふれあいは別の楽しみ方。予約・開催時間・天候による変更を確認して。','さぬき市の候補です。宇多津のうどん店や父母ヶ浜とは別の場所なので、周遊は未評価です。']});
+  add('chichibugahama','kagawa','父母ヶ浜で海辺の景色を楽しむ',{},{nature:10},[2],{sources:[beachSource],notes:['夕景・水鏡の写真は、干潮・風・天候・日没の条件次第です。通常の海辺の景色への評価です。']});
+  add('kagawa-udon','kagawa','おか泉で讃岐うどんを味わう',{noodles:10},{},[3],{daylight:false,sources:[okasenSource],notes:['一日の食事の候補。水族館と組み合わせる案も用意しています。']});
+  add('kurashiki','okayama','倉敷散策とフルーツ・スイーツ',{sweets:10},{walk:10,cafe:10},[0,3],{sources:[momokoSource,source('くらしき桃子・メニュー','https://kurashikimomoko.jp/menu/')],notes:['くらしき桃子 倉敷本店を店舗候補に。旬の果物と提供メニューは時期によって変わります。']});
+  add('korakuen','okayama','後楽園で庭園をゆっくり歩く',{},{nature:10,walk:5},[1],{notes:['街並みではなく庭園の散策として部分的に合う候補です。食事は別の候補から選ぼう。']});
+  add('okayama-yakisoba','okayama','岡山市のやす坊でひるぜん焼そば',{yakisoba:10},{},[2],{sources:[source('やす坊・お店とメニューの紹介','https://okayamastyle.com/yasubou/')],notes:['岡山市東区西大寺のやす坊が候補。掲載メニューは2024年時点なので、ひるぜん焼そばの提供状況はお店に確認してね。']});
+
+  const newPlanIds=new Set(['nagoya-aquarium','nagoya-castle','nagoya-misokatsu','nagoya-hitsumabushi','nabana','maguro','shikoku-aquarium','dolphin','chichibugahama','kagawa-udon','kurashiki','korakuen','okayama-yakisoba']);
+  profiles.forEach(p=>{p.isNew=newPlanIds.has(p.id);});
+
+  // Existing local illustrations remain available; no unrelated photos are assigned to new places.
   const referenceImages={src:'images/outings-reference.png',width:1122,height:1402,regions:{
     outlet:[36,270,261,195],steak:[38,489,150,99],coffee:[210,489,147,99],dinner:[380,489,147,99],
-    awaji:[586,271,261,196],pancake:[587,491,136,97],flowers:[751,491,155,97],burger:[932,491,150,97],
     whirlpool:[39,713,258,169],museum:[40,908,142,89],cruise:[208,908,151,89],ramen:[386,908,140,89],
-    shrine:[587,714,258,168],road:[587,908,137,89],beef:[750,908,153,89],eel:[928,908,151,89],
+    shrine:[587,714,258,168],road:[587,908,137,97],beef:[750,908,153,89],eel:[928,908,151,89],
     lake:[40,1130,255,137],trees:[39,1293,147,77],temple:[209,1293,146,77],omibeef:[384,1293,143,77],
-    amanohashidate:[593,1118,286,147],seafood:[589,1294,142,77],lift:[755,1294,145,77],street:[932,1294,146,77]
+    amanohashidate:[593,1118,286,147],seafood:[589,1294,142,77],lift:[755,1294,145,77]
   }};
-  const imageAssets={};
-  for(const [key,alt] of Object.entries({okage:'商家の通りで食べ歩きを楽しむイメージ','ise-udon':'太い麺とたまりだれの伊勢うどんのイメージ','onion-udon':'揚げた玉ねぎとうどんのイメージ',night:'湖と街の灯りを見下ろす夜景のイメージ',pines:'海辺の松林を歩くイメージ',outlet:'アウトレットで買い物を楽しむイメージ',garden:'温室の植物を眺めるイメージ',pancake:'パンケーキのイメージ',burger:'玉ねぎ入りバーガーのイメージ',forest:'森の中のレクリエーションのイメージ'}))imageAssets[key]={src:'images/generated/'+key+'.webp',alt:alt+'（AI生成）',width:1536,height:1024};
-  const profileImages={byakuan:'ise-udon',outlet:'outlet',garden:'garden',pancake:'pancake',udon:'onion-udon',night:'night',okage:'okage','okage-seafood':'okage','okage-udon':'ise-udon','okage-cafe':'okage',museum:'museum',boat:'whirlpool','city-cruise':'cruise',terrace:'lake',trees:'trees',temple:'temple',beef:'omibeef',bridge:'amanohashidate'};
-  profiles.forEach(p=>{p.imageKey=profileImages[p.id];});
-  const galleries={sanda:['outlet','steak','coffee','dinner'],awaji:['garden','pancake','onion-udon','burger'],tokushima:['whirlpool','museum','cruise','ramen'],mie:['okage','ise-udon','beef','eel'],shiga:['lake','trees','temple','omibeef'],kyoto:['amanohashidate','seafood','lift','pines']};
-  const spotImages={sanda:[['outlet'],['steak','coffee']],awaji:[['garden'],['onion-udon'],['pancake'],['burger'],['forest']],tokushima:[['museum'],['whirlpool'],['cruise'],['ramen','seafood']],mie:[['okage'],['shrine'],['beef'],['road'],['eel']],shiga:[['lake'],['trees'],['temple'],['night'],['omibeef']],kyoto:[['amanohashidate'],['pines'],['seafood']]};
-  // Avoid attaching a ramen image to an udon dish: use a general food visual.
-
-  spotImages.mie.push(['seafood'],['ise-udon'],['coffee']);
-  galleries.byakuan=['ise-udon','pancake'];spotImages.byakuan=[['ise-udon'],['pancake'],[],[],[]];
-
-  Object.keys(destinations).forEach(id=>{destinations[id].gallery=galleries[id];destinations[id].spotImages=spotImages[id];});
-  const scoring={direct:12,partial:6,detailDirect:4,detailPartial:2,companionMax:4,environment:{indoor:{indoor:0,mixed:-2,outdoor:-4},outdoor:{indoor:-4,mixed:-1,outdoor:0}},areaOrder:Object.keys(destinations)};
-  // Editorial relative burden, not measured journey times or live routing.
-  const travel={origin:'大阪駅周辺',note:'高速道路を使う想定で、大まかに分けています。渋滞や休憩、現地での移動によっても変わります。',labels:{near:'比較的短め',middle:'中くらい',far:'長め'},penalties:{short:{near:0,middle:-3,far:-6},middle:{near:0,middle:0,far:-2},long:{near:0,middle:0,far:0}}};
-  travel.timePenalties={early:{near:0,middle:-2,far:-6},earlynight:{near:0,middle:0,far:-3}};
-  const travelBands={byakuan:'near',outlet:'near',garden:'middle',pancake:'middle',udon:'middle',museum:'far',boat:'far',okage:'far',terrace:'middle',trees:'far',temple:'middle',night:'middle',beef:'middle',bridge:'far','okage-seafood':'far','okage-udon':'far','okage-cafe':'far','city-cruise':'far'};
-  profiles.forEach(p=>{p.travelBand=travelBands[p.id];});
-  const schedulePolicy={shortDurations:['meal','tea'],shortProfiles:['byakuan'],lateStarts:['afternoon','evening'],eveningProfiles:['byakuan','night','outlet']};
-  const planDetails={
-    outlet:{main:[0],near:[1]},garden:{main:[0]},pancake:{main:[2]},udon:{main:[1]},
-    museum:{main:[0],near:[1]},boat:{main:[1],near:[0]},'city-cruise':{main:[2]},
-    okage:{main:[0],near:[5,6,7],extra:[1],drive:[2,3,4]},
-    terrace:{main:[0]},trees:{main:[1]},temple:{main:[2]},night:{main:[3]},beef:{main:[4]},
-    bridge:{main:[0,1],extra:[2]},byakuan:{main:[0],extra:[1,2],drive:[3],ending:[4]}
+  const imageAssets={'daytrip-world-hero':{src:'images/generated/daytrip-world-hero.webp',alt:'うどんや海鮮丼、街並み、お城、クラゲ、イルカ、花畑と海辺がつながるおでかけの世界',width:1536,height:1024}};
+  for(const [key,alt] of Object.entries({okage:'商家の通りで食べ歩きを楽しむ','ise-udon':'太い麺とたまりだれの伊勢うどん','onion-udon':'揚げた玉ねぎとうどん',night:'湖と街の灯りを見下ろす夜景',pines:'海辺の松林を歩く',outlet:'アウトレットで買い物',garden:'温室の植物',pancake:'パンケーキ',burger:'玉ねぎ入りバーガー',forest:'森の中のレクリエーション'})){
+    imageAssets[key]={src:'images/generated/'+key+'.webp',alt:alt+'のイメージ（AI生成）',width:1536,height:1024};
+  }
+  const galleries={byakuan:['ise-udon','pancake'],sanda:['outlet','steak','coffee'],tokushima:['whirlpool','museum','cruise'],mie:['okage','ise-udon','beef'],shiga:['lake','trees','omibeef'],kyoto:['amanohashidate','pines','seafood']};
+  const spotImages={byakuan:[['ise-udon'],['pancake']],sanda:[['outlet'],[]],tokushima:[['museum'],['whirlpool'],['cruise'],[]],mie:[['okage'],['shrine'],['beef'],[],[],['seafood'],['ise-udon'],['coffee']],shiga:[['lake'],['trees'],['temple'],['night'],['omibeef']],kyoto:[['amanohashidate'],['pines'],[]]};
+  const daytripImages={
+    jellyfish:'青い水の中を漂うクラゲ',
+    'nagoya-castle':'名古屋城をイメージした城と緑の風景',
+    misokatsu:'味噌だれをかけたカツ',
+    hitsumabushi:'ひつまぶしと薬味',
+    'flower-garden':'色とりどりの花が咲く庭園',
+    'seafood-bowl':'まぐろを中心とした海鮮丼',
+    aquarium:'青い水槽で泳ぐ魚の群れ',
+    dolphin:'穏やかな海面から顔を出すイルカ',
+    chichibugahama:'父母ヶ浜をイメージした干潟と夕景',
+    'sanuki-udon':'讃岐うどんと天ぷら',
+    kurashiki:'倉敷をイメージした白壁の街並みと水路',
+    korakuen:'後楽園をイメージした池と緑の庭園',
+    'hiruzen-yakisoba':'鶏肉とキャベツのひるぜん焼そば',
+    'fruit-parfait':'桃やぶどうのフルーツパフェ',
+    'scenic-road':'伊勢志摩をイメージした海を見晴らす道'
   };
-  const planGroup=id=>id.startsWith('okage')?'okage':id;
-  const data={planDetails,planGroup,schedulePolicy,interests,refinements,commonQuestions,scheduleQuestions,destinations,profiles,scoring,referenceImages,travel,imageAssets};
+  for(const [key,alt] of Object.entries(daytripImages)){
+    imageAssets[key]={src:'images/generated/daytrip-'+key+'.webp',alt:alt+'（AI生成のイメージ）',width:1536,height:1024};
+  }
+  const addedProfileImages={
+    'tokushima-food':'ramen','ise-skyline':'scenic-road','ise-eel':'eel','amanohashidate-food':'seafood',
+    'nagoya-aquarium':'jellyfish','nagoya-castle':'nagoya-castle','nagoya-misokatsu':'misokatsu','nagoya-hitsumabushi':'hitsumabushi',
+    nabana:'flower-garden',maguro:'seafood-bowl','shikoku-aquarium':'aquarium',dolphin:'dolphin',chichibugahama:'chichibugahama',
+    'kagawa-udon':'sanuki-udon',kurashiki:'kurashiki',korakuen:'korakuen','okayama-yakisoba':'hiruzen-yakisoba'
+  };
+  profiles.forEach(p=>{if(addedProfileImages[p.id])p.imageKey=addedProfileImages[p.id];});
+  Object.assign(galleries,{
+    nagoya:['jellyfish','nagoya-castle','misokatsu','hitsumabushi'],mieNorth:['flower-garden','seafood-bowl'],
+    kagawa:['aquarium','dolphin','chichibugahama','sanuki-udon'],okayama:['kurashiki','korakuen','hiruzen-yakisoba','fruit-parfait']
+  });
+  Object.assign(spotImages,{
+    nagoya:[['jellyfish'],['nagoya-castle'],['misokatsu'],['hitsumabushi']],mieNorth:[['flower-garden'],['seafood-bowl']],
+    kagawa:[['aquarium'],['dolphin'],['chichibugahama'],['sanuki-udon']],okayama:[['kurashiki'],['korakuen'],['hiruzen-yakisoba'],['fruit-parfait']]
+  });
+  spotImages.sanda[1]=['coffee'];spotImages.tokushima[3]=['ramen'];spotImages.mie[3]=['scenic-road'];spotImages.mie[4]=['eel'];spotImages.kyoto[2]=['seafood'];
+  for(const [id,d] of Object.entries(destinations)){d.gallery=galleries[id]||[];d.spotImages=spotImages[id]||d.spotImages;}
+  const travel={
+    origin:'大阪駅周辺',
+    note:'高速道路を使う想定の、大まかな移動負担です。経路検索による所要時間ではありません。渋滞・休憩・現地での移動は別に確認してください。',
+    labels:{near:'比較的短め',middle:'中くらい',far:'長め'},
+    penalties:{short:{near:0,middle:-3,far:-6},middle:{near:0,middle:0,far:-2},long:{near:0,middle:0,far:0}}
+  };
+  // Editorial screening only: not verified travel times, opening hours, or a route itinerary.
+  const schedule={allowedReturns:{near:{morning:['early','earlynight','late'],afternoon:['early','earlynight','late'],evening:['earlynight','late']},middle:{morning:['early','earlynight','late'],afternoon:['earlynight','late'],evening:['late']},far:{morning:['earlynight','late'],afternoon:[],evening:[]}}};
+  const scoring={direct:10,partial:5,areaOrder:Object.keys(destinations)};
+  const data={questions,destinations,profiles,planDetails,planGroup:id=>id,referenceImages,imageAssets,travel,schedule,scoring};
   root.DateData=data;
-  if(typeof module!=='undefined'&&module.exports) module.exports=data;
+  if(typeof module!=='undefined'&&module.exports)module.exports=data;
 })(typeof globalThis!=='undefined'?globalThis:window);
