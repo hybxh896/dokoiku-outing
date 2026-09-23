@@ -31,7 +31,7 @@
   }
   function reset(){answers={};epoch++;move({view:'home'});}
   function home(){
-    return '<section class="fade"><p class="eyebrow">LET’S FIND OUR NEXT STOP</p><h1 class="home-title">次どこ行く？</h1><p class="trip-edition">9/4のおでかけ用</p><p class="home-tagline">ごはんも、遊びも。<br>一日を楽しもう。</p><p class="intro">食べたいものと、やってみたいこと。<br>ふたつの気分から、日帰りのおでかけを。</p>'+art('nagoya','hero-art','daytrip-world-hero')+'<div class="home-meta"><span class="pill">5〜6問で候補を探す</span><span>車で、一日のおでかけ。</span></div>'+button('はじめる <span class="arrow">→</span>','start')+button('おでかけプランを一覧で見る →','catalog','','outline')+'<p class="subtext">気になるところを、二人で相談してみよう。</p><div class="places-strip">'+Object.values(D.destinations).map(d=>'<span>'+esc(d.name)+'</span>').join('')+'</div>'+prototype()+'</section>';
+    return '<section class="fade"><p class="eyebrow">LET’S FIND OUR NEXT STOP</p><h1 class="home-title">次どこ行く？</h1><p class="trip-edition">10/4のおでかけ用</p><p class="home-tagline">ごはんも、遊びも。<br>一日を楽しもう。</p><p class="intro">食べたいものと、やってみたいこと。<br>ふたつの気分から、日帰りのおでかけを。</p>'+art('nagoya','hero-art','daytrip-world-hero')+'<div class="home-meta"><span class="pill">5〜6問で候補を探す</span><span>車で、一日のおでかけ。</span></div>'+button('はじめる <span class="arrow">→</span>','start')+button('おでかけプランを一覧で見る →','catalog','','outline')+'<p class="subtext">気になるところを、二人で相談してみよう。</p><div class="places-strip">'+Object.values(D.destinations).map(d=>'<span>'+esc(d.name)+'</span>').join('')+'</div>'+prototype()+'</section>';
   }
   function question(){
     const qs=L.questions(answers);
@@ -119,7 +119,7 @@
     const heading=app.querySelector('h1');heading?.setAttribute('tabindex','-1');heading?.focus({preventScroll:true});
     window.scrollTo(0,scroll);
     document.title=route.view==='question'?(route.step+1)+'問目 — 次どこ行く？':route.view==='detail'?D.profiles.find(p=>p.id===route.plan).name+' — 次どこ行く？':'次どこ行く？';
-    document.title+='｜9/4のおでかけ用';
+    document.title+='｜10/4のおでかけ用';
   }
   app.addEventListener('click',event=>{
     const el=event.target.closest('[data-action]');if(!el||pending)return;
