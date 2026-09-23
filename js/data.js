@@ -53,13 +53,11 @@
       ['天橋立の松並木','全部を渡らず、短い散策でも。'],
       ['海鮮グルメ','海鮮のお店はこれから選びます。','店舗未定']
     ]),
-    nagoya:area('名古屋','クラゲを眺めて、名古屋めしも。','sea','blue',[
+    nagoya:area('名古屋・三重北部','水族館やお城、花の景色と、おいしい寄り道。','sea','blue',[
       ['名古屋港水族館','一押しはクラゲ。「くらげなごりうむ」で、ゆっくり眺める時間を。'],
       ['名古屋城','天守閣は外から眺め、本丸御殿や城内を散策。現在、天守閣の中には入れません。'],
       ['矢場とん 名古屋城金シャチ横丁店','味噌カツの店舗候補。名古屋城の正門側、義直ゾーン。'],
-      ['ひつまぶし名古屋備長 金シャチ横丁店','ひつまぶしの店舗候補。名古屋城の正門側、義直ゾーン。']
-    ],'◌'),
-    mieNorth:area('三重北部・桑名〜四日市','花の景色と、海鮮丼を楽しみに。','sea','peach',[
+      ['ひつまぶし名古屋備長 金シャチ横丁店','ひつまぶしの店舗候補。名古屋城の正門側、義直ゾーン。'],
       ['なばなの里','花や庭園の景色。イルミネーションは開催日・点灯時間の確認が必要です。'],
       ['まぐろレストラン 四日市本店','海鮮丼を食べる候補。名古屋市内ではなく四日市にあります。']
     ],'✿'),
@@ -115,8 +113,8 @@
   add('nagoya-castle','nagoya','名古屋城を散策する',{},{walk:10},[1],{near:[2,3],sources:[castleSource,foodStreetSource]});
   add('nagoya-misokatsu','nagoya','名古屋城と金シャチ横丁の味噌カツ',{misokatsu:10},{walk:10},[1,2],{sources:[castleSource,foodStreetSource],notes:['矢場とん 名古屋城金シャチ横丁店を店舗候補にしています。営業日と待ち時間を確認して。']});
   add('nagoya-hitsumabushi','nagoya','名古屋城と金シャチ横丁のひつまぶし',{hitsumabushi:10},{walk:10},[1,3],{sources:[castleSource,foodStreetSource],notes:['ひつまぶし名古屋備長 金シャチ横丁店を店舗候補にしています。営業日と待ち時間を確認して。']});
-  add('nabana','mieNorth','なばなの里で花や庭園を楽しむ',{},{nature:10},[0],{sources:[source('なばなの里・季節のイベント','https://www.nagashima-onsen.co.jp/nabana/event/index.html')],notes:['イルミネーションも見たい場合は、開催日・点灯時間・帰宅時間を別に確認して。昼の庭園への評価です。']});
-  add('maguro','mieNorth','まぐろレストランで海鮮丼',{seafood:10},{},[1],{daylight:false,sources:[source('まぐろレストラン・四日市本店','https://maguro-restaurant.co.jp/restaurant/yokkaichi/')],notes:['食事中心の候補です。なばなの里や名古屋港水族館との周遊は未評価です。']});
+  add('nabana','nagoya','なばなの里で花や庭園を楽しむ',{},{nature:10},[4],{sources:[source('なばなの里・季節のイベント','https://www.nagashima-onsen.co.jp/nabana/event/index.html')],notes:['イルミネーションも見たい場合は、開催日・点灯時間・帰宅時間を別に確認して。昼の庭園への評価です。']});
+  add('maguro','nagoya','まぐろレストランで海鮮丼',{seafood:10},{},[5],{daylight:false,sources:[source('まぐろレストラン・四日市本店','https://maguro-restaurant.co.jp/restaurant/yokkaichi/')],notes:['食事中心の候補です。なばなの里や名古屋港水族館との周遊は未評価です。']});
   add('shikoku-aquarium','kagawa','四国水族館と宇多津のうどん',{noodles:10},{dolphin:10},[0,3],{sources:[shikokuSource,okasenSource,source('四国水族館・イルカ','https://shikoku-aquarium.jp/information/dolphinlive.html')],notes:['うどんは宇多津のおか泉を店舗候補に。両施設の所在地を確認した組み合わせ案です。道路状況と待ち時間は当日確認して。']});
   add('dolphin','kagawa','日本ドルフィンセンターでイルカを楽しむ',{},{dolphin:10},[1],{sources:[source('日本ドルフィンセンター・ふれあいプログラム','https://www.j-dc2.net/activity/')],notes:['見学とふれあいは別の楽しみ方。予約・開催時間・天候による変更を確認して。','さぬき市の候補です。宇多津のうどん店や父母ヶ浜とは別の場所なので、周遊は未評価です。']});
   add('chichibugahama','kagawa','父母ヶ浜で海辺の景色を楽しむ',{},{nature:10},[2],{sources:[beachSource],notes:['夕景・水鏡の写真は、干潮・風・天候・日没の条件次第です。通常の海辺の景色への評価です。']});
@@ -183,11 +181,11 @@
   };
   profiles.forEach(p=>{if(addedProfileImages[p.id])p.imageKey=addedProfileImages[p.id];});
   Object.assign(galleries,{
-    nagoya:['jellyfish','nagoya-castle','misokatsu','hitsumabushi'],mieNorth:['flower-garden','seafood-bowl'],
+    nagoya:['jellyfish','nagoya-castle','misokatsu','hitsumabushi','flower-garden','seafood-bowl'],
     kagawa:['aquarium','dolphin','chichibugahama','sanuki-udon'],okayama:['kurashiki','korakuen','hiruzen-yakisoba','fruit-parfait']
   });
   Object.assign(spotImages,{
-    nagoya:[['jellyfish'],['nagoya-castle'],['misokatsu'],['hitsumabushi']],mieNorth:[['flower-garden'],['seafood-bowl']],
+    nagoya:[['jellyfish'],['nagoya-castle'],['misokatsu'],['hitsumabushi'],['flower-garden'],['seafood-bowl']],
     kagawa:[['aquarium'],['dolphin'],['chichibugahama'],['sanuki-udon']],okayama:[['kurashiki'],['korakuen'],['hiruzen-yakisoba'],['fruit-parfait']]
   });
   spotImages.sanda[1]=['coffee'];spotImages.tokushima[3]=['seafood'];spotImages.mie[3]=['scenic-road'];spotImages.mie[4]=['eel'];spotImages.kyoto[2]=['seafood'];
