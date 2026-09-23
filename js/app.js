@@ -50,7 +50,7 @@
   function cautions(p){
     const notes=[];
     if(p.scheduleReason)notes.push(p.scheduleReason);
-    if(p.travelScore<0)notes.push('車での移動は、希望より長めです。');
+    if(p.travelScore<0)notes.push('移動の負担は、希望より長めの目安です。');
     if(p.scheduleUnknown)notes.push('集合・帰宅の時間が決まったら、滞在できる時間も確認しよう。');
     if(answers.food&&answers.food!=='unknown'&&!p.foodScore)notes.push('希望の料理のお店は、このプランには未登録です。');
     if(answers.activity&&answers.activity!=='unknown'&&!p.activityScore)notes.push('希望のアクティビティとの組み合わせは、まだ用意できていません。');

@@ -4,7 +4,7 @@
   const option=(id,label,note='')=>({id,label,note});
   const questions=[
     {id:'food',eyebrow:'まずは、食べたいもの',title:'何を食べたい気分？',hint:'今回は一日のおでかけ。食事も遊びも楽しもう。',options:[
-      option('noodles','うどん'),option('meat','焼肉・牛肉料理','焼肉や近江牛を楽しみたい'),option('seafood','海鮮丼・魚料理'),option('misokatsu','味噌カツ'),option('hitsumabushi','うなぎ・ひつまぶし'),option('yakisoba','ひるぜん焼そば'),option('sweets','フルーツ・スイーツ'),option('unknown','候補を見て決めたい')]},
+      option('noodles','うどん'),option('meat','焼肉・牛肉料理'),option('seafood','海鮮丼・魚料理'),option('misokatsu','味噌カツ'),option('hitsumabushi','うなぎ・ひつまぶし'),option('yakisoba','ひるぜん焼そば'),option('sweets','フルーツ・スイーツ'),option('unknown','候補を見て決めたい')]},
     {id:'activity',eyebrow:'食事と一緒に楽しむこと',title:'ごはんのほかに何を楽しみたい？',hint:'食事とは別に、今日の楽しみをひとつ。',options:[
       option('jellyfish','クラゲを眺める'),option('dolphin','イルカを楽しむ','泳ぐ姿や、施設ごとの体験を'),option('nature','景色・自然'),option('walk','街歩き・お参り','お城や庭園の散策も'),option('shopping','買い物'),option('art','美術館'),option('boat','船に乗る'),option('cafe','カフェでゆっくり'),option('unknown','候補を見て決めたい')]},
     {id:'priority',eyebrow:'今回の優先順位',title:'今回は、どちらを優先して選びたい？',hint:'どちらの候補も残して、表示する順番を変えます。',options:[option('food','ごはんを優先したい'),option('activity','やりたいことを優先したい'),option('balanced','どちらも同じくらい')]},
@@ -55,7 +55,7 @@
     ]),
     nagoya:area('名古屋','クラゲを眺めて、名古屋めしも。','sea','blue',[
       ['名古屋港水族館','一押しはクラゲ。「くらげなごりうむ」で、ゆっくり眺める時間を。'],
-      ['名古屋城','お城と本丸御殿を楽しむ散策。観覧できる範囲は公式情報で確認して。'],
+      ['名古屋城','天守閣は外から眺め、本丸御殿や城内を散策。現在、天守閣の中には入れません。'],
       ['矢場とん 名古屋城金シャチ横丁店','味噌カツの店舗候補。名古屋城の正門側、義直ゾーン。'],
       ['ひつまぶし名古屋備長 金シャチ横丁店','ひつまぶしの店舗候補。名古屋城の正門側、義直ゾーン。']
     ],'◌'),
@@ -125,6 +125,15 @@
   add('korakuen','okayama','後楽園で庭園をゆっくり歩く',{},{nature:10,walk:5},[1],{notes:['街並みではなく庭園の散策として部分的に合う候補です。食事は別の候補から選ぼう。']});
   add('okayama-yakisoba','okayama','岡山市のやす坊でひるぜん焼そば',{yakisoba:10},{},[2],{sources:[source('やす坊・お店とメニューの紹介','https://okayamastyle.com/yasubou/')],notes:['岡山市東区西大寺のやす坊が候補。掲載メニューは2024年時点なので、ひるぜん焼そばの提供状況はお店に確認してね。']});
 
+  // Reviewed on 2026-09-24; references and remaining uncertainties are in docs/fact-check-2026-09-24.md.
+  const reviewedNotes={"byakuan":["うどんを楽しんだ後の寄り道は、その日の気分で。","営業時間と休業日は、お店に確認してから出かけよう。"],"museum":["観潮船も楽しむなら、渦潮の見頃に合わせて鑑賞の時間を決めよう。"],"boat":["渦潮の見頃は日によって変わります。潮見表と当日の運航状況を確認して。"],"tokushima-food":["食事のお店は、食べたい料理に合わせてこれから選ぼう。"],"trees":["並木道を歩いて、季節の景色を楽しもう。"],"bridge":["展望と松並木の散策を楽しむ案です。海鮮のお店はこれから選ぼう。"],"amanohashidate-food":["海鮮のお店はこれから選ぼう。展望や散策もするなら、お店の場所と営業時間に合わせて。"],"night":["夢見が丘から大津・びわ湖の夜景を楽しむ案です。出発前にドライブウェイの営業時間を確認して。"],"nabana":["花や庭園を楽しむ案です。イルミネーションの10/4開催は確認できていないため、夜の予定に入れる前に公式案内を見よう。"],"maguro":["四日市で海鮮丼を楽しむ案です。なばなの里や名古屋港水族館も訪れるなら、移動と営業時間を確認して。"],"shikoku-aquarium":["水族館とうどんのおか泉は、どちらも宇多津にあります。食事はお店の営業時間に合わせて。","イルカプレイングタイムは、イルカの体調などで休止することがあります。"],"dolphin":["餌やり体験は当日現地受付で、事前予約はできません。トレーナー体験やドルフィンスイムは予約できます。","天候やイルカの状態により、体験の内容・時間の変更や中止があります。","施設はさぬき市にあります。宇多津や父母ヶ浜も訪れるなら、車での移動時間を見込もう。"],"chichibugahama":["水鏡のような写真は、干潮で風が穏やかな時間が狙い目。夕景も撮るなら日没時刻を確認して。"],"korakuen":["庭園をゆっくり歩いて楽しむ案です。食事は別に選ぼう。"]};
+  const reviewedSources={"museum":[["大塚国際美術館・公式","https://o-museum.or.jp/"],["うずしお汽船・乗船案内","https://www.uzushio-kisen.com/kojin.html"]],"boat":[["うずしお汽船・乗船案内","https://www.uzushio-kisen.com/kojin.html"]],"isshobin":[["一升びん・公式","https://www.isshobin.com/"]],"night":[["夢見が丘・公式案内","https://hieizan-way.com/facility/yumemigaoka/"]],"ise-skyline":[["伊勢志摩スカイライン・公式","https://www.iseshimaskyline.com/"]],"ise-eel":[["伊勢神宮・参拝案内","https://www.isejingu.or.jp/visit/"]],"nagoya-misokatsu":[["矢場とん・店舗案内","https://kinshachi-yokocho.com/shop/yabaton/"]],"nagoya-hitsumabushi":[["備長・店舗案内","https://kinshachi-yokocho.com/shop/hitsumabushi_bincho/"]]};
+  for(const p of profiles){
+    if(reviewedNotes[p.id])p.notes=reviewedNotes[p.id];
+    if(reviewedSources[p.id])p.sources.push(...reviewedSources[p.id].map(([label,url])=>source(label,url)));
+    if(['nagoya-castle','nagoya-misokatsu','nagoya-hitsumabushi'].includes(p.id)){p.notes.unshift('現在、天守閣の中には入れません。本丸御殿や城内の散策を楽しもう。');p.sources.push(source('名古屋城・公式の開園案内','https://www.nagoyajo.city.nagoya.jp/'));}
+  }
+
   const newPlanIds=new Set(['nagoya-aquarium','nagoya-castle','nagoya-misokatsu','nagoya-hitsumabushi','nabana','maguro','shikoku-aquarium','dolphin','chichibugahama','kagawa-udon','kurashiki','korakuen','okayama-yakisoba']);
   profiles.forEach(p=>{p.isNew=newPlanIds.has(p.id);});
 
@@ -162,8 +171,12 @@
   for(const [key,alt] of Object.entries(daytripImages)){
     imageAssets[key]={src:'images/generated/daytrip-'+key+'.webp',alt:alt+'（AI生成のイメージ）',width:1536,height:1024};
   }
+  for(const [key,alt] of Object.entries({eel:'うな重',beef:'焼肉',coffee:'コーヒーとケーキ'}))imageAssets[key]={src:'images/generated/refresh-'+key+'.webp',alt:alt+'のイメージ',width:1536,height:1024};
+  imageAssets.omibeef=imageAssets.beef;
+  imageAssets.steak=imageAssets.beef;
+  imageAssets.seafood=imageAssets['seafood-bowl'];
   const addedProfileImages={
-    'tokushima-food':'ramen','ise-skyline':'scenic-road','ise-eel':'eel','amanohashidate-food':'seafood',
+    'tokushima-food':'seafood','ise-skyline':'scenic-road','ise-eel':'eel','amanohashidate-food':'seafood',
     'nagoya-aquarium':'jellyfish','nagoya-castle':'nagoya-castle','nagoya-misokatsu':'misokatsu','nagoya-hitsumabushi':'hitsumabushi',
     nabana:'flower-garden',maguro:'seafood-bowl','shikoku-aquarium':'aquarium',dolphin:'dolphin',chichibugahama:'chichibugahama',
     'kagawa-udon':'sanuki-udon',kurashiki:'kurashiki',korakuen:'korakuen','okayama-yakisoba':'hiruzen-yakisoba'
@@ -177,7 +190,7 @@
     nagoya:[['jellyfish'],['nagoya-castle'],['misokatsu'],['hitsumabushi']],mieNorth:[['flower-garden'],['seafood-bowl']],
     kagawa:[['aquarium'],['dolphin'],['chichibugahama'],['sanuki-udon']],okayama:[['kurashiki'],['korakuen'],['hiruzen-yakisoba'],['fruit-parfait']]
   });
-  spotImages.sanda[1]=['coffee'];spotImages.tokushima[3]=['ramen'];spotImages.mie[3]=['scenic-road'];spotImages.mie[4]=['eel'];spotImages.kyoto[2]=['seafood'];
+  spotImages.sanda[1]=['coffee'];spotImages.tokushima[3]=['seafood'];spotImages.mie[3]=['scenic-road'];spotImages.mie[4]=['eel'];spotImages.kyoto[2]=['seafood'];
   for(const [id,d] of Object.entries(destinations)){d.gallery=galleries[id]||[];d.spotImages=spotImages[id]||d.spotImages;}
   const travel={
     origin:'大阪駅周辺',
